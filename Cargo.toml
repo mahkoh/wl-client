@@ -1,0 +1,8 @@
+[workspace]
+resolver = "3"
+members = [
+    "all-protocols-test",
+    "wl-client",
+    "wl-client-builder",
+    "wl-client-builder-cli",
+]

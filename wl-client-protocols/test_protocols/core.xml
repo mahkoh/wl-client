@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<protocol name="core">
+
+  <interface name="wl_display" version="1">
+    <request name="sync">
+      <arg name="callback" type="new_id" interface="wl_callback"/>
+    </request>
+
+    <request name="get_registry">
+      <arg name="registry" type="new_id" interface="wl_registry"/>
+    </request>
+
+    <event name="error">
+      <arg name="object_id" type="object"/>
+      <arg name="code" type="uint"/>
+      <arg name="message" type="string"/>
+    </event>
+
+    <event name="delete_id">
+      <arg name="id" type="uint"/>
+    </event>
+  </interface>
+
+  <interface name="wl_registry" version="1">
+    <request name="bind">
+      <arg name="name" type="uint"/>
+      <arg name="id" type="new_id"/>
+    </request>
+
+    <event name="global">
+      <arg name="name" type="uint"/>
+      <arg name="interface" type="string"/>
+      <arg name="version" type="uint"/>
+    </event>
+
+    <event name="global_remove">
+      <arg name="name" type="uint"/>
+    </event>
+  </interface>
+
+  <interface name="wl_callback" version="1">
+    <event name="done" type="destructor">
+      <arg name="callback_data" type="uint"/>
+    </event>
+  </interface>
+
+  <interface name="wl_root" version="1">
+    <request name="create_dummy">
+      <arg name="id" type="new_id" interface="wl_dummy"/>
+    </request>
+    <request name="ping_dummy">
+      <arg name="id" type="object" interface="wl_dummy"/>
+    </request>
+    <request name="destroy" type="destructor"/>
+    <event name="pong_dummy">
+      <arg name="id" type="object" interface="wl_dummy"/>
+    </event>
+    <request name="get_server_name">
+      <arg name="id" type="new_id" interface="wl_string"/>
+    </request>
+    <request name="send_new_dummy">
+    </request>
+    <event name="new_dummy">
+      <arg name="id" type="new_id" interface="wl_dummy"/>
+    </event>
+    <request name="echo">
+      <arg name="id" type="new_id" interface="wl_string"/>
+      <arg name="str" type="string"/>
+    </request>
+    <request name="bind">
+      <arg name="id" type="new_id"/>
+    </request>
+  </interface>
+
+  <interface name="wl_dummy" version="1">
+    <request name="destroy" type="destructor"/>
+    <request name="recycle" type="destructor">
+      <arg name="id" type="new_id" interface="wl_dummy"/>
+    </request>
+    <request name="get_string">
+      <arg name="id" type="new_id" interface="wl_string"/>
+    </request>
+  </interface>
+
+  <interface name="wl_string" version="1">
+    <event name="string" type="destructor">
+      <arg name="string" type="string"/>
+    </event>
+  </interface>
+
+  <interface name="wl_surface" version="1">
+
+  </interface>
+
+  <interface name="wl_seat" version="10">
+    <enum name="capability" bitfield="true">
+      <entry name="keyboard" value="2"/>
+    </enum>
+
+    <event name="capabilities">
+      <arg name="capabilities" type="uint" enum="capability"/>
+    </event>
+
+    <request name="get_keyboard">
+      <arg name="id" type="new_id" interface="wl_keyboard"/>
+    </request>
+
+    <request name="release" type="destructor" since="5"/>
+  </interface>
+
+  <interface name="wl_keyboard" version="10">
+    <enum name="key_state">
+      <entry name="released" value="0"/>
+      <entry name="pressed" value="1"/>
+      <entry name="repeated" value="2"/>
+    </enum>
+
+    <event name="key">
+      <arg name="serial" type="uint"/>
+      <arg name="time" type="uint"/>
+      <arg name="key" type="uint"/>
+      <arg name="state" type="uint" enum="key_state"/>
+    </event>
+
+    <event name="modifiers">
+      <arg name="serial" type="uint"/>
+      <arg name="mods_depressed" type="uint"/>
+      <arg name="mods_latched" type="uint"/>
+      <arg name="mods_locked" type="uint"/>
+      <arg name="group" type="uint"/>
+    </event>
+
+    <request name="release" type="destructor" since="3"/>
+  </interface>
+
+</protocol>

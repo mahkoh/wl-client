@@ -1,0 +1,42 @@
+[package]
+name = "wl-client"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85.0"
+readme = "../README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mahkoh/wl-client"
+description = "Safe client-side libwayland wrapper"
+keywords = ["protocol", "linux", "wayland"]
+categories = ["api-bindings"]
+
+[features]
+# Only for tests. Do not enable.
+_doctests = ["dep:libc"]
+# Only for tests. Do not enable.
+_leaking-tests = []
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dependencies]
+libloading = "0.8.6"
+parking_lot = "0.12.3"
+isnt = "0.1.0"
+libc = { version = "0.2.171", optional = true }
+mio = { version = "1.0.3", features = ["os-ext"] }
+cfg-if = "1.0.0"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2.171"
+
+[dev-dependencies]
+libc = "0.2.171"
+tokio = { version = "1.44.1", features = ["macros", "rt", "net"]}
+tokio-test = "0.4.4"
+tempfile = "3.19.1"
+futures-util = "0.3.31"
+
+[[example]]
+name = "hello-wayland"
+doc-scrape-examples = true

@@ -1,0 +1,11 @@
+[package]
+name = "all-protocols-test"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+wl-client = { path = "../wl-client" }
+
+[build-dependencies]
+wl-client-builder = { path = "../wl-client-builder" }
+walkdir = "2.5.0"

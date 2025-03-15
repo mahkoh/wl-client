@@ -1,0 +1,118 @@
+name: workflows
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Generate
+        run: |
+          rustup toolchain install nightly --allow-downgrade -c rustfmt
+          ./wl-client-protocols/generate.sh
+          git diff --exit-code
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check
+        run: |
+          rustup toolchain install nightly --allow-downgrade -c rustfmt
+          cargo +nightly fmt -- --check
+  wl-client-msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: |
+          rustup override set 1.85.0
+          cd wl-client
+          cargo update
+          cargo check --all-features --verbose
+  wl-client-builder-msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: |
+          rustup override set 1.85.0
+          cd wl-client-builder
+          cargo update
+          cargo check --all-features --verbose
+  all-protocols-clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Clippy
+        run: |
+          git submodule update --init
+          cd all-protocols-test
+          cargo clippy --verbose -- -Dwarnings
+  wl-client-clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Clippy
+        run: |
+          cd wl-client
+          cargo clippy --verbose -- -Dwarnings
+  wl-client-builder-clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Clippy
+        run: |
+          cd wl-client-builder
+          cargo clippy --verbose -- -Dwarnings
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build
+        run: |
+          git submodule update --init
+          cargo build
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test
+        run: |
+          git submodule update --init
+          cargo test --verbose --features=_doctests --features=_leaking-tests
+  test-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test
+        run: |
+          git submodule update --init
+          cargo test --verbose --features=_doctests --features=_leaking-tests
+  miri:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test
+        run: |
+          rustup component add --toolchain=nightly miri
+          cd wl-client
+          export MIRIFLAGS="-Zmiri-permissive-provenance"
+          cargo +nightly miri test --verbose --features=_doctests
+  miri-leaking:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test
+        run: |
+          rustup component add --toolchain=nightly miri
+          cd wl-client
+          export MIRIFLAGS="-Zmiri-permissive-provenance -Zmiri-ignore-leaks"
+          cargo +nightly miri test --verbose --lib --features=_leaking-tests

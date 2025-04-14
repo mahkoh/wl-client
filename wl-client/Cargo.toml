@@ -1,6 +1,6 @@
 [package]
 name = "wl-client"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 rust-version = "1.85.0"
 readme = "../README.md"
@@ -17,7 +17,7 @@ _doctests = ["dep:libc"]
 _leaking-tests = []
 
 [package.metadata.docs.rs]
-all-features = true
+all-features = false
 
 [dependencies]
 libloading = "0.8.6"

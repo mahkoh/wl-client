@@ -802,7 +802,7 @@ dependencies = [
 
 [[package]]
 name = "wl-client"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "cfg-if",
  "futures-util",

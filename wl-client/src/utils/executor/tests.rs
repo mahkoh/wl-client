@@ -1,6 +1,7 @@
 use {
-    crate::utils::{executor::Executor, on_drop::on_drop},
+    crate::utils::executor::Executor,
     parking_lot::{Condvar, Mutex},
+    run_on_drop::on_drop,
     std::{
         future::{pending, poll_fn},
         pin::pin,

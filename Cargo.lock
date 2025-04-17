@@ -499,6 +499,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "run-on-drop"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1c9afdcca45aed5b357d64e0d033f6400c07a668aa4f9b92d25d39a884889457"
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -811,6 +817,7 @@ dependencies = [
  "libloading",
  "mio",
  "parking_lot",
+ "run-on-drop",
  "tempfile",
  "tokio",
  "tokio-test",

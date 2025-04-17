@@ -10,9 +10,9 @@ use {
             wl_root::{WlRootEventHandler, WlRootRef},
             wl_string::{WlString, WlStringEventHandler, WlStringRef},
         },
-        utils::on_drop::on_drop,
     },
     parking_lot::Mutex,
+    run_on_drop::on_drop,
     std::{
         cell::Cell,
         rc::Rc,
@@ -563,12 +563,14 @@ fn panic_in_dispatch() {
 
 #[cfg(feature = "_leaking-tests")]
 mod leaking {
-    use crate::{
-        Libwayland,
-        proxy::{self, OwnedProxy, low_level::CreateEventHandler},
-        test_protocol_helpers::{callback, get_root},
-        test_protocols::core::{wl_callback::WlCallback, wl_display::WlDisplay},
-        utils::on_drop::on_drop,
+    use {
+        crate::{
+            Libwayland,
+            proxy::{self, OwnedProxy, low_level::CreateEventHandler},
+            test_protocol_helpers::{callback, get_root},
+            test_protocols::core::{wl_callback::WlCallback, wl_display::WlDisplay},
+        },
+        run_on_drop::on_drop,
     };
 
     #[test]

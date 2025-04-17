@@ -15,11 +15,12 @@ use {
             },
         },
         utils::{
-            on_drop::{abort_on_panic, on_drop},
+            on_drop::abort_on_panic,
             sync_cell::{SyncCell, SyncUnsafeCell},
         },
     },
     parking_lot::{Condvar, Mutex},
+    run_on_drop::on_drop,
     std::{
         ffi::{c_int, c_void},
         future::poll_fn,
@@ -622,7 +623,10 @@ unsafe fn set_event_handler2<'scope, P, H>(
     // SAFETY: - libwayland only ever calls event handlers while preserving a
     //           valid pointer to the proxy and all pointers in args
     //         - set_event_handler3 checks that the interface of the proxy is
-    //           P::WL_INTERFACE
+    //           H::WL_INTERFACE
+    //         - by the safety requirements, P::WL_INTERFACE is compatible with the
+    //           proxy's interface which is compatible with H::WL_INTERFACE by the
+    //           previous point
     //         - libwayland ensures that opcode and args conform to the
     //           interface before calling the event handler
     //         - set_event_handler3 sets event_handler to a pointer to H
@@ -644,7 +648,7 @@ unsafe fn set_event_handler2<'scope, P, H>(
     //             event handlers have been destroyed.
     unsafe {
         proxy.set_event_handler3(
-            P::WL_INTERFACE,
+            H::WL_INTERFACE,
             event_handler,
             drop_event_handler,
             mem::needs_drop::<H>(),
@@ -704,7 +708,8 @@ impl ScopeData {
 /// - the queue lock of the proxy must be held
 /// - if scope_data.may_dispatch, then all safety requirements of event_handler_func::<T>
 ///   must be satisfied
-/// - the interface of the proxy must be P::WL_INTERFACE
+/// - the interface of the proxy must be compatible with P::WL_INTERFACE
+/// - P::WL_INTERFACE and T::WL_INTERFACE must be compatible
 unsafe extern "C" fn event_handler_func_scoped<P, T>(
     event_handler_data: *const c_void,
     target: *mut c_void,
@@ -732,7 +737,7 @@ where
     // SAFETY: Dito, target is and stays valid.
     let target =
         unsafe { UntypedBorrowedProxy::new_immutable(proxy_data.proxy.libwayland, target) };
-    // SAFETY: Dito, the interface of the proxy is P::WL_INTERFACE
+    // SAFETY: Dito, the interface of the proxy is compatible with P::WL_INTERFACE
     //         Dito, target is a valid pointer and stays valid
     //         Dito, opcode and args conform to P::WL_INTERFACE
     unsafe {

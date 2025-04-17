@@ -1,8 +1,9 @@
 use {
-    crate::utils::{eventfd::Eventfd, on_drop::on_drop},
+    crate::utils::eventfd::Eventfd,
     io::ErrorKind,
     mio::{Events, Interest, Token, unix::SourceFd},
     parking_lot::Mutex,
+    run_on_drop::on_drop,
     std::{
         collections::HashMap,
         future::poll_fn,

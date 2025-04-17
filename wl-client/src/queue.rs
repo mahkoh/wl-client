@@ -16,12 +16,12 @@ use {
         },
         utils::{
             block_on::block_on,
-            on_drop::on_drop,
             reentrant_mutex::{ReentrantMutex, ReentrantMutexGuard},
             sync_ptr::SyncNonNull,
         },
     },
     parking_lot::Mutex,
+    run_on_drop::on_drop,
     std::{
         cell::{Cell, RefCell},
         ffi::{CStr, CString},

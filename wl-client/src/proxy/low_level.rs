@@ -26,7 +26,7 @@ mod tests;
 
 /// A type that can create an event handler.
 ///
-/// This type is usually implemented by [`crate::proxy::OwnedProxy::Api`] to turn an object implementing
+/// This type is usually implemented by [`OwnedProxy::Api`] to turn an object implementing
 /// safe event callbacks into an event handler that can handle raw libwayland events.
 ///
 /// This type is usually implemented by bindings that are automatically generated with the

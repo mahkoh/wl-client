@@ -8,8 +8,8 @@ use {
             wl_display::WlDisplay,
             wl_root::WlRootEventHandler,
         },
-        utils::on_drop::on_drop,
     },
+    run_on_drop::on_drop,
     std::{
         cell::Cell,
         future::poll_fn,
@@ -435,8 +435,17 @@ fn scope_concurrent_drop() {
 mod leaking {
     use {
         crate::{
-            Libwayland,
-            test_protocols::core::{wl_callback::WlCallback, wl_display::WlDisplay},
+            Libwayland, Queue,
+            builder::prelude::UntypedBorrowedProxy,
+            ffi::{wl_argument, wl_interface},
+            proxy::{
+                OwnedProxy,
+                low_level::{CreateEventHandler, EventHandler},
+            },
+            test_protocol_helpers::get_root,
+            test_protocols::core::{
+                wl_callback::WlCallback, wl_display::WlDisplay, wl_root::WlRoot,
+            },
         },
         std::{
             cell::Cell,
@@ -477,5 +486,38 @@ mod leaking {
         // to access the dropped box. you can test this by removing the
         // may_dispatch.set(false) from dispatch_scope_async.
         queue.dispatch_async().await.unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "Proxy has an incompatible interface")]
+    fn wrong_event_handler_interface() {
+        let lib = Libwayland::open().unwrap();
+        let con = lib.connect_to_default_display().unwrap();
+        let queue = con.create_local_queue(c"queue name");
+        let root = get_root(&queue);
+        struct Eh;
+        impl CreateEventHandler<Eh> for <WlRoot as OwnedProxy>::Api {
+            type EventHandler = Eh;
+
+            fn create_event_handler(handler: Eh) -> Self::EventHandler {
+                handler
+            }
+        }
+        unsafe impl EventHandler for Eh {
+            const WL_INTERFACE: &'static wl_interface = WlCallback::WL_INTERFACE;
+
+            unsafe fn handle_event(
+                &self,
+                _: &Queue,
+                _: &UntypedBorrowedProxy,
+                _: u32,
+                _: *mut wl_argument,
+            ) {
+                unreachable!()
+            }
+        }
+        queue.dispatch_scope_blocking(|scope| {
+            scope.set_event_handler(&root, Eh);
+        });
     }
 }

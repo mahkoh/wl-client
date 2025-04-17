@@ -94,6 +94,59 @@
 //! }
 //! ```
 //!
+//! # Example: Passing mutable state to event handlers
+//!
+//! The code of this example can be found in the `get-registry-with-data` example binary.
+//!
+//! ```
+//! # use wl_client::{proxy, Libwayland};
+//! # use wl_client::test_protocols_data::core::wl_display::WlDisplay;
+//! # use wl_client::test_protocols_data::core::wl_registry::WlRegistry;
+//!
+//! struct State {
+//!     registry: WlRegistry,
+//!     globals: Vec<Global>,
+//! }
+//!
+//! #[expect(dead_code)]
+//! #[derive(Debug)]
+//! struct Global {
+//!     name: u32,
+//!     interface: String,
+//!     version: u32,
+//! }
+//!
+//! # fn f() {
+//! let lib = Libwayland::open().unwrap();
+//! let con = lib.connect_to_default_display().unwrap();
+//! let (_queue, queue) = con.create_queue_with_data::<State>(c"get-registry");
+//!
+//! // Create a new registry that will receive the globals and can later be used to
+//! // bind them.
+//! let mut state = State {
+//!     registry: queue.display::<WlDisplay>().get_registry(),
+//!     globals: vec![],
+//! };
+//!
+//! // Since we only want to create a snapshot, we don't care about
+//! // global_remove events. This allows us to use the functional event handler
+//! // form.
+//! proxy::set_event_handler(
+//!     &state.registry,
+//!     WlRegistry::on_global(|state: &mut State, _, name, interface, version| {
+//!         state.globals.push(Global {
+//!             name,
+//!             interface: interface.to_string(),
+//!             version,
+//!         });
+//!     }),
+//! );
+//! queue.dispatch_roundtrip_blocking(&mut state).unwrap();
+//!
+//! println!("{:#?}", state.globals);
+//! # }
+//! ```
+//!
 //! # Example: Handling keyboard events
 //!
 //! The code of this example can be found in the `keyboard-events` example binary.
@@ -305,6 +358,10 @@ mod queue;
 pub mod test_protocol_helpers;
 #[cfg(any(test, feature = "_doctests"))]
 pub mod test_protocols;
+#[cfg(any(test, feature = "_doctests"))]
+pub mod test_protocols_data;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_with_data;
 mod utils;

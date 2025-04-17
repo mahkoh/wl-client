@@ -16,7 +16,9 @@ pub use {
         queue::Queue,
     },
     std::{
+        any::TypeId,
         fmt::{Debug, Formatter},
+        marker::PhantomData,
         mem,
         ops::{
             BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Deref, Not, Sub,

@@ -17,21 +17,25 @@ use {
         utils::{
             block_on::block_on,
             reentrant_mutex::{ReentrantMutex, ReentrantMutexGuard},
-            sync_ptr::SyncNonNull,
+            sync_cell::SyncCell,
+            sync_ptr::{SyncNonNull, SyncPtr},
         },
     },
     parking_lot::Mutex,
     run_on_drop::on_drop,
     std::{
+        any::{TypeId, type_name},
         cell::{Cell, RefCell},
         ffi::{CStr, CString},
         fmt::{Debug, Formatter},
         future::poll_fn,
-        io, mem,
+        io,
+        marker::PhantomData,
+        mem,
         ops::Deref,
         panic::resume_unwind,
         pin::pin,
-        ptr::NonNull,
+        ptr::{self, NonNull},
         sync::Arc,
         task::{Poll, Waker},
         thread::panicking,
@@ -220,6 +224,43 @@ pub struct Queue {
     queue_data: Arc<QueueData>,
 }
 
+/// An adapter for [`Queue`]s with mutable data.
+///
+/// This type is returned by [`Connection::create_queue_with_data`] and
+/// [`Connection::create_local_queue_with_data`] and can also be created from any queue
+/// by calling [`Queue::with_data`].
+///
+/// This type must be used to dispatch queues that were created with one of the two
+/// functions above. It derefs to [`Queue`] but re-declares all of the dispatching
+/// functions to also accept a `&mut T` that will be passed to the dispatchers.
+///
+/// # Example
+///
+/// ```
+/// # use wl_client::{proxy, Libwayland};
+/// # use wl_client::test_protocols_data::core::wl_callback::WlCallback;
+/// # use wl_client::test_protocols_data::core::wl_display::WlDisplay;
+/// #
+/// let lib = Libwayland::open().unwrap();
+/// let con = lib.connect_to_default_display().unwrap();
+/// let (_queue, queue) = con.create_queue_with_data::<bool>(c"queue name");
+///
+/// let mut done = false;
+/// let sync = queue.display::<WlDisplay>().sync();
+/// proxy::set_event_handler(&sync, WlCallback::on_done(|done: &mut bool, _, _| {
+///     *done = true;
+/// }));
+/// queue.dispatch_roundtrip_blocking(&mut done).unwrap();
+/// assert!(done);
+/// ```
+pub struct QueueWithData<T>
+where
+    T: 'static,
+{
+    queue: Queue,
+    _phantom: PhantomData<fn(&mut T)>,
+}
+
 /// A borrowed event queue.
 ///
 /// This type is a thin wrapper around a `wl_event_queue` pointer. If the pointer is a
@@ -311,6 +352,18 @@ struct QueueData {
     /// - the unsynchronized fields of any proxies attached to the queue
     /// - the fields is_dispatching and to_destroy below
     mutex: ReentrantMutex<DispatchData>,
+    /// The type of mutable data passed to event handlers attached to this queue. Each
+    /// event handler attached to this queue must
+    /// - not use any mutable data,
+    /// - use mutable data of type `()`, or
+    /// - use mutable data of this type.
+    mut_data_type: Option<TypeId>,
+    /// The name of mut_data_type, if any. This field is only used for panic messages.
+    mut_data_type_name: Option<&'static str>,
+    /// This field is protected by the mutex. It always contains a non-null pointer that
+    /// can be dereferenced to `&mut ()`. During dispatch, if `mut_data_type` is not
+    /// `None`, it contains a pointer to the data that was passed into `dispatch_pending`.
+    mut_data: SyncCell<SyncPtr<u8>>,
     /// The registry for proxies that need manual destruction when the connection is
     /// dropped.
     owned_proxy_registry: OwnedProxyRegistry,
@@ -544,13 +597,20 @@ impl Queue {
     /// event loop, as it might block indefinitely. Use [`Connection::create_watcher`] and
     /// [`Queue::dispatch_pending`] instead.
     ///
+    /// This function cannot be used with the queue was created with
+    /// [`Connection::create_queue_with_data`] or
+    /// [`Connection::create_local_queue_with_data`]. Use
+    /// [`QueueWithData::dispatch_blocking`] instead.
+    ///
     /// The returned number is the number of events that have been dispatched by this
     /// call. The number can be zero if another thread dispatched the events before us.
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the current
-    /// thread is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -578,8 +638,10 @@ impl Queue {
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the thread
-    /// polling the future is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the thread
+    ///   polling the future is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -611,12 +673,19 @@ impl Queue {
     /// [`Queue::create_watcher`] to dispatch the queue in an async context or event loop
     /// respectively.
     ///
+    /// This function cannot be used with the queue was created with
+    /// [`Connection::create_queue_with_data`] or
+    /// [`Connection::create_local_queue_with_data`]. Use
+    /// [`QueueWithData::dispatch_pending`] instead.
+    ///
     /// The returned number is the number of events that were dispatched.
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the current
-    /// thread is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -651,6 +720,24 @@ impl Queue {
     /// ```
     pub fn dispatch_pending(&self) -> io::Result<u64> {
         let d = &*self.queue_data;
+        if d.mut_data_type.is_some() {
+            panic!(
+                "Queue requires mutable data of type `{}` to be dispatched",
+                d.mut_data_type_name.unwrap(),
+            );
+        }
+        // SAFETY: - We've just checked that `mut_data_type` is None and
+        //           `&mut () = &mut U`.
+        unsafe { self.dispatch_pending_internal(ptr::from_mut(&mut ()).cast()) }
+    }
+
+    /// # Safety
+    ///
+    /// - If `self.mut_data_type` is Some, then `mut_data` must be a `&mut T` where
+    ///   `T` has the type ID `self.mut_data_type`.
+    /// - Otherwise `mut_data` must be `&mut U` for any `U`.
+    unsafe fn dispatch_pending_internal(&self, mut_data: *mut u8) -> io::Result<u64> {
+        let d = &*self.queue_data;
         let _resume_unwind = on_drop(|| {
             if let Some(err) = DISPATCH_PANIC.take() {
                 if !panicking() {
@@ -659,6 +746,13 @@ impl Queue {
             }
         });
         let res = self.with_dispatch(|| {
+            let md = &self.queue_data.mut_data;
+            // SAFETY: - We're holding the queue lock.
+            //         - If mut_data_type is Some, then mut_data is `&mut T` where T has
+            //           the type ID mut_data_type.
+            let prev_mut_data = unsafe { md.replace(SyncPtr(mut_data)) };
+            // SAFETY: - We're holding the queue lock.
+            let _reset_mut_data = on_drop(|| unsafe { md.set(prev_mut_data) });
             // SAFETY: - by the invariants, the display and queue are valid
             //         - the queue was created from the display
             //         - we're inside with_dispatch which means that we're holding the
@@ -678,6 +772,20 @@ impl Queue {
         Ok(res as u64)
     }
 
+    pub(crate) fn mut_data_type(&self) -> (Option<TypeId>, Option<&'static str>) {
+        let d = &*self.queue_data;
+        (d.mut_data_type, d.mut_data_type_name)
+    }
+
+    /// Returns the non-null mutable data pointer.
+    ///
+    /// # Safety
+    ///
+    /// - The queue mutex must be held.
+    pub(crate) unsafe fn data(&self) -> *mut u8 {
+        unsafe { self.queue_data.mut_data.get().0 }
+    }
+
     /// Blocks the current thread until the compositor has processed all previous requests
     /// and all of its response events have been dispatched.
     ///
@@ -690,14 +798,21 @@ impl Queue {
     /// during initialization to receive the full list of supported formats before
     /// returning.
     ///
+    /// This function cannot be used with the queue was created with
+    /// [`Connection::create_queue_with_data`] or
+    /// [`Connection::create_local_queue_with_data`]. Use
+    /// [`QueueWithData::dispatch_roundtrip_blocking`] instead.
+    ///
     /// If this function returns `Ok(())`, then the function returns after (in the sense
     /// of the C++ memory model) the event handlers of all previous events have been
     /// invoked.
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the current
-    /// thread is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -744,8 +859,10 @@ impl Queue {
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the thread
-    /// polling the future is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -779,6 +896,14 @@ impl Queue {
     /// # });
     /// ```
     pub async fn dispatch_roundtrip_async(&self) -> io::Result<()> {
+        self.dispatch_roundtrip_async_internal(|| self.dispatch_pending())
+            .await
+    }
+
+    async fn dispatch_roundtrip_async_internal(
+        &self,
+        mut dispatch_pending: impl FnMut() -> io::Result<u64>,
+    ) -> io::Result<()> {
         #[derive(Default)]
         struct State {
             ready: bool,
@@ -833,7 +958,7 @@ impl Queue {
             if ready {
                 return Ok(());
             }
-            self.dispatch_pending()?;
+            dispatch_pending()?;
         }
     }
 
@@ -995,6 +1120,43 @@ impl Queue {
     pub fn create_watcher(&self) -> io::Result<QueueWatcher> {
         self.connection.create_watcher(&[self], [])
     }
+
+    /// Creates an adapter for queues with mutable data.
+    ///
+    /// This function can only be used if the queue was created with
+    /// [`Connection::create_queue_with_data`] or
+    /// [`Connection::create_local_queue_with_data`] with the same `T`.
+    ///
+    /// # Panics
+    ///
+    /// Panics if this queue was not created with
+    /// [`Connection::create_queue_with_data`] or
+    /// [`Connection::create_local_queue_with_data`] or if it was created with a different
+    /// data type.
+    pub fn with_data<T>(&self) -> QueueWithData<T>
+    where
+        T: 'static,
+    {
+        let d = &*self.queue_data;
+        if d.mut_data_type != Some(TypeId::of::<T>()) {
+            let rn = type_name::<T>();
+            if let Some(name) = d.mut_data_type_name {
+                panic!(
+                    "This queue only supports mutable data of type `{name}` but the \
+                    requested type is `{rn}`",
+                );
+            } else {
+                panic!(
+                    "This queue does not support mutable data but the requested type is \
+                    `{rn}`"
+                );
+            }
+        }
+        QueueWithData {
+            queue: self.clone(),
+            _phantom: Default::default(),
+        }
+    }
 }
 
 impl BorrowedQueue {
@@ -1080,6 +1242,254 @@ impl BorrowedQueue {
     }
 }
 
+impl<T> QueueWithData<T>
+where
+    T: 'static,
+{
+    /// Blocks the current thread until at least one event has been dispatched.
+    ///
+    /// This function is the same as [`Queue::dispatch_blocking`] but accepts a `&mut T`
+    /// that will be passed to event handlers.
+    ///
+    /// # Panic
+    ///
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use wl_client::Libwayland;
+    /// # use wl_client::test_protocols_data::core::wl_display::WlDisplay;
+    /// #
+    /// let lib = Libwayland::open().unwrap();
+    /// let con = lib.connect_to_default_display().unwrap();
+    /// let (_queue, queue) = con.create_queue_with_data::<State>(c"queue name");
+    ///
+    /// struct State {
+    ///     // ...
+    /// }
+    /// let mut state = State {
+    ///     // ...
+    /// };
+    ///
+    /// // For this example, ensure that the compositor sends an event in the near future.
+    /// let _sync = queue.display::<WlDisplay>().sync();
+    ///
+    /// queue.dispatch_blocking(&mut state).unwrap();
+    /// ```
+    pub fn dispatch_blocking(&self, data: &mut T) -> io::Result<u64> {
+        block_on(self.dispatch_async(data))
+    }
+
+    /// Completes when at least one event has been dispatched.
+    ///
+    /// This function is the same as [`QueueWithData::dispatch_async`] except that it is
+    /// async and does not block the current thread.
+    ///
+    /// # Panic
+    ///
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the thread
+    ///   polling the future is not the thread that this queue was created in.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use wl_client::Libwayland;
+    /// # use wl_client::test_protocols_data::core::wl_display::WlDisplay;
+    /// #
+    /// # tokio_test::block_on(async {
+    /// let lib = Libwayland::open().unwrap();
+    /// let con = lib.connect_to_default_display().unwrap();
+    /// let (_queue, queue) = con.create_queue_with_data(c"queue name");
+    ///
+    /// struct State {
+    ///     // ...
+    /// }
+    /// let mut state = State {
+    ///     // ...
+    /// };
+    ///
+    /// // For this example, ensure that the compositor sends an event in the near future.
+    /// let _sync = queue.display::<WlDisplay>().sync();
+    ///
+    /// queue.dispatch_async(&mut state).await.unwrap();
+    /// # });
+    /// ```
+    pub async fn dispatch_async(&self, data: &mut T) -> io::Result<u64> {
+        self.connection.wait_for_events(&[self]).await?;
+        self.dispatch_pending(data)
+    }
+
+    /// Blocks the current thread until the compositor has processed all previous requests
+    /// and all of its response events have been dispatched.
+    ///
+    /// This function is the same as [`Queue::dispatch_roundtrip_blocking`] but accepts a
+    /// `&mut T` that will be passed to event handlers.
+    ///
+    /// # Panic
+    ///
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use std::sync::Arc;
+    /// # use std::sync::atomic::AtomicBool;
+    /// # use std::sync::atomic::Ordering::Relaxed;
+    /// # use wl_client::{proxy, Libwayland};
+    /// # use wl_client::test_protocols_data::core::wl_callback::{WlCallback, WlCallbackEventHandler, WlCallbackRef};
+    /// # use wl_client::test_protocols_data::core::wl_display::WlDisplay;
+    /// #
+    /// let lib = Libwayland::open().unwrap();
+    /// let con = lib.connect_to_default_display().unwrap();
+    /// let (_queue, queue) = con.create_queue_with_data::<State>(c"");
+    /// let display: WlDisplay = queue.display();
+    ///
+    /// struct State {
+    ///     done: bool,
+    /// }
+    /// let mut state = State {
+    ///     done: false,
+    /// };
+    ///
+    /// // send some messages to the compositor
+    /// let sync = display.sync();
+    /// proxy::set_event_handler(&sync, WlCallback::on_done(move |state: &mut State, _, _| {
+    ///     state.done = true;
+    /// }));
+    ///
+    /// // perform a roundtrip
+    /// queue.dispatch_roundtrip_blocking(&mut state).unwrap();
+    ///
+    /// // assert that we've received the response
+    /// assert!(state.done);
+    /// ```
+    pub fn dispatch_roundtrip_blocking(&self, data: &mut T) -> io::Result<()> {
+        block_on(self.dispatch_roundtrip_async(data))
+    }
+
+    /// Completes when the compositor has processed all previous requests and all of its
+    /// response events have been dispatched.
+    ///
+    /// This function is the same as [`QueueWithData::dispatch_roundtrip_blocking`] except
+    /// that it is async and does not block the current thread.
+    ///
+    /// If the future completes with `Ok(())`, then the future completes after (in the
+    /// sense of the C++ memory model) the event handlers of all previous events have been
+    /// invoked.
+    ///
+    /// # Panic
+    ///
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use std::sync::Arc;
+    /// # use std::sync::atomic::AtomicBool;
+    /// # use std::sync::atomic::Ordering::Relaxed;
+    /// # use wl_client::{proxy, Libwayland};
+    /// # use wl_client::test_protocols_data::core::wl_callback::{WlCallback, WlCallbackEventHandler, WlCallbackRef};
+    /// # use wl_client::test_protocols_data::core::wl_display::WlDisplay;
+    /// #
+    /// # tokio_test::block_on(async {
+    /// let lib = Libwayland::open().unwrap();
+    /// let con = lib.connect_to_default_display().unwrap();
+    /// let (_queue, queue) = con.create_queue_with_data::<State>(c"queue name");
+    /// let display: WlDisplay = queue.display();
+    ///
+    /// struct State {
+    ///     done: bool,
+    /// }
+    /// let mut state = State {
+    ///     done: false,
+    /// };
+    ///
+    /// // send some messages to the compositor
+    /// let sync = display.sync();
+    /// proxy::set_event_handler(&sync, WlCallback::on_done(move |state: &mut State, _, _| {
+    ///     state.done = true;
+    /// }));
+    ///
+    /// // perform a roundtrip
+    /// queue.dispatch_roundtrip_async(&mut state).await.unwrap();
+    ///
+    /// // assert that we've received the response
+    /// assert!(state.done);
+    /// # });
+    /// ```
+    pub async fn dispatch_roundtrip_async(&self, data: &mut T) -> io::Result<()> {
+        self.dispatch_roundtrip_async_internal(|| self.dispatch_pending(data))
+            .await
+    }
+
+    /// Dispatches enqueued events.
+    ///
+    /// This function is the same as [`Queue::dispatch_pending`] but accepts a `&mut T`
+    /// that will be passed to event handlers.
+    ///
+    /// # Panic
+    ///
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use std::sync::Arc;
+    /// # use std::sync::atomic::AtomicBool;
+    /// # use std::sync::atomic::Ordering::Relaxed;
+    /// # use wl_client::{proxy, Libwayland};
+    /// # use wl_client::test_protocol_helpers::callback;
+    /// # use wl_client::test_protocols_data::core::wl_callback::{WlCallback, WlCallbackEventHandler, WlCallbackRef};
+    /// # use wl_client::test_protocols_data::core::wl_display::WlDisplay;
+    /// #
+    /// # tokio_test::block_on(async {
+    /// let lib = Libwayland::open().unwrap();
+    /// let con = lib.connect_to_default_display().unwrap();
+    /// let (_queue, queue) = con.create_queue_with_data(c"queue name");
+    /// let display: WlDisplay = queue.display();
+    ///
+    /// struct State {
+    ///     done: bool,
+    /// }
+    /// let mut state = State {
+    ///     done: false,
+    /// };
+    ///
+    /// let sync = display.sync();
+    /// proxy::set_event_handler(&sync, WlCallback::on_done(move |state: &mut State, _, _| {
+    ///     state.done = true;
+    /// }));
+    ///
+    /// while !state.done {
+    ///     queue.wait_for_events().await.unwrap();
+    ///     // Dispatch the events.
+    ///     queue.dispatch_pending(&mut state).unwrap();
+    /// }
+    /// # });
+    /// ```
+    pub fn dispatch_pending(&self, data: &mut T) -> io::Result<u64> {
+        let d = &*self.queue_data;
+        if let Some(t) = d.mut_data_type {
+            if t != TypeId::of::<T>() {
+                panic!(
+                    "Queue requires mutable data of type `{}` to be dispatched but supplied data has type `{}`",
+                    d.mut_data_type_name.unwrap(),
+                    type_name::<T>(),
+                );
+            }
+        }
+        // SAFETY: - If mut_data_type is Some, then we've just checked that `T` has the
+        //           type ID mut_data_type.
+        //         - Otherwise, `&mut T = &mut U`.
+        unsafe { self.dispatch_pending_internal(ptr::from_mut(data).cast()) }
+    }
+}
+
 impl Connection {
     /// Creates a new queue.
     ///
@@ -1097,7 +1507,38 @@ impl Connection {
     /// let _queue = con.create_queue(c"queue name");
     /// ```
     pub fn create_queue(&self, name: &CStr) -> QueueOwner {
-        self.create_queue2(name, false)
+        self.create_queue2(name, false, None, None)
+    }
+
+    /// Creates a new queue with mutable data.
+    ///
+    /// This function is the same as [`Connection::create_queue`] except that event
+    /// handlers attached to this queue can receive a `&mut T`. When dispatching the queue,
+    /// a `&mut T` must be passed into one of the dispatcher functions of
+    /// [`QueueWithData`]. The dispatcher functions declared on [`Queue`] cannot be used
+    /// to dispatch this queue.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use wl_client::Libwayland;
+    /// #
+    /// let lib = Libwayland::open().unwrap();
+    /// let con = lib.connect_to_default_display().unwrap();
+    /// let (_queue_owner, _queue) = con.create_queue_with_data::<State>(c"queue name");
+    ///
+    /// struct State {
+    ///     // ...
+    /// }
+    /// ```
+    pub fn create_queue_with_data<T>(&self, name: &CStr) -> (QueueOwner, QueueWithData<T>)
+    where
+        T: 'static,
+    {
+        let owner =
+            self.create_queue2(name, false, Some(TypeId::of::<T>()), Some(type_name::<T>()));
+        let queue = owner.with_data();
+        (owner, queue)
     }
 
     /// Creates a new local queue.
@@ -1116,11 +1557,47 @@ impl Connection {
     /// let _queue = con.create_local_queue(c"queue name");
     /// ```
     pub fn create_local_queue(&self, name: &CStr) -> QueueOwner {
-        self.create_queue2(name, true)
+        self.create_queue2(name, true, None, None)
+    }
+
+    /// Creates a new queue with mutable data.
+    ///
+    /// This function is the same as [`Connection::create_local_queue`] except that event
+    /// handlers attached to this queue can receive a `&mut T`. When dispatching the queue,
+    /// a `&mut T` must be passed into one of the dispatcher functions of
+    /// [`QueueWithData`]. The dispatcher functions declared on [`Queue`] cannot be used
+    /// to dispatch this queue.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use wl_client::Libwayland;
+    /// #
+    /// let lib = Libwayland::open().unwrap();
+    /// let con = lib.connect_to_default_display().unwrap();
+    /// let (_queue_owner, _queue) = con.create_queue_with_data::<State>(c"queue name");
+    ///
+    /// struct State {
+    ///     // ...
+    /// }
+    /// ```
+    pub fn create_local_queue_with_data<T>(&self, name: &CStr) -> (QueueOwner, QueueWithData<T>)
+    where
+        T: 'static,
+    {
+        let owner = self.create_queue2(name, true, Some(TypeId::of::<T>()), Some(type_name::<T>()));
+        let queue = owner.with_data();
+        (owner, queue)
     }
 
     /// Creates a new queue.
-    fn create_queue2(&self, name: &CStr, local: bool) -> QueueOwner {
+    fn create_queue2(
+        &self,
+        name: &CStr,
+        local: bool,
+        mut_data_type: Option<TypeId>,
+        mut_data_type_name: Option<&'static str>,
+    ) -> QueueOwner {
         // SAFETY: The display is valid and queue_name is a CString.
         let queue = unsafe {
             self.libwayland()
@@ -1141,6 +1618,9 @@ impl Connection {
                         true => ReentrantMutex::new_thread_local(Default::default()),
                         false => ReentrantMutex::new_shared(Default::default()),
                     },
+                    mut_data_type,
+                    mut_data_type_name,
+                    mut_data: SyncCell::new(SyncPtr(ptr::from_mut(&mut ()).cast())),
                     owned_proxy_registry: Default::default(),
                 }),
             },
@@ -1224,5 +1704,37 @@ impl Deref for Queue {
 
     fn deref(&self) -> &Self::Target {
         &self.queue_data.borrowed
+    }
+}
+
+impl<T> Clone for QueueWithData<T>
+where
+    T: 'static,
+{
+    fn clone(&self) -> Self {
+        Self {
+            queue: self.queue.clone(),
+            _phantom: Default::default(),
+        }
+    }
+}
+
+impl<T> Deref for QueueWithData<T>
+where
+    T: 'static,
+{
+    type Target = Queue;
+
+    fn deref(&self) -> &Self::Target {
+        &self.queue
+    }
+}
+
+impl<T> Debug for QueueWithData<T>
+where
+    T: 'static,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.queue, f)
     }
 }

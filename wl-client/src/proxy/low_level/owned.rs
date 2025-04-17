@@ -15,7 +15,7 @@ use {
     destruction::ProxyDataDestruction,
     parking_lot::Mutex,
     std::{
-        any::Any,
+        any::{Any, TypeId},
         cell::Cell,
         collections::HashSet,
         ffi::{c_int, c_void},
@@ -415,9 +415,17 @@ impl UntypedOwnedProxy {
         //           or any dispatching function on a thread other than the thread
         //           on which the queue was created
         //         - we always hold the queue lock while dispatching
+        //         - set_event_handler3 checks that the mutable_type is either None or
+        //           `TypeId::of::<()>()` or the mutable type that the queue was created
+        //           with. When the queue is being dispatched and the mutable type of the
+        //           queue is Some, then the queue sets the data pointer to `&mut T` where
+        //           `T` has the mutable type ID. Since only one event handler is invoked
+        //           at a time, it is safe for the event handler to dereference that
+        //           pointer.
         unsafe {
             self.set_event_handler3(
                 T::WL_INTERFACE,
+                T::mutable_type(),
                 event_handler,
                 drop_event_handler,
                 mem::needs_drop::<T>(),
@@ -432,6 +440,7 @@ impl UntypedOwnedProxy {
     /// There must be a type `T: EventHandler` such that
     ///
     /// - interface is T::WL_INTERFACE
+    /// - mutable_data_type is T::mutable_type()
     /// - event_handler is a pointer to a T
     /// - if T does not implement Send, then the queue must be a local queue
     /// - event_handler must stay valid until drop_event handler is called
@@ -442,9 +451,11 @@ impl UntypedOwnedProxy {
     /// - if scope is Some, then either
     ///   - the event handler must be destroyed before the end of 'scope, OR
     ///   - ScopeData::handle_destruction must never run the destructions
+    #[expect(clippy::too_many_arguments)]
     unsafe fn set_event_handler3<'scope>(
         &self,
         interface: &'static wl_interface,
+        mutable_data_type: Option<(TypeId, &'static str)>,
         event_handler: *mut u8,
         drop_event_handler: *mut u8,
         needs_drop: bool,
@@ -463,6 +474,29 @@ impl UntypedOwnedProxy {
                 }
             }
         }
+        'check_mutable_data: {
+            let Some((mutable_data_type, mutable_data_type_name)) = mutable_data_type else {
+                break 'check_mutable_data;
+            };
+            if mutable_data_type == TypeId::of::<()>() {
+                break 'check_mutable_data;
+            }
+            let (mut_data_type, mut_data_type_name) = slf.queue.mut_data_type();
+            if Some(mutable_data_type) == mut_data_type {
+                break 'check_mutable_data;
+            }
+            if let Some(name) = mut_data_type_name {
+                panic!(
+                    "This queue only supports mutable data of type `{name}` but the \
+                    event handler requires type `{mutable_data_type_name}`",
+                );
+            } else {
+                panic!(
+                    "This queue does not support mutable data but the event handler \
+                    requires type `{mutable_data_type_name}`",
+                );
+            }
+        };
         let lock = slf.proxy.lock();
         let proxy = check_dispatching_proxy(lock.wl_proxy());
         if slf.ever_had_event_handler.swap(true, Relaxed) {
@@ -864,9 +898,19 @@ impl OwnedProxyRegistry {
 /// # Safety
 ///
 /// - `WL_INTERFACE` must be a valid wl_interface.
+/// - `mutable_type` must always return the same value.
 pub unsafe trait EventHandler {
     /// The type of interface that can be handled by this event handler.
     const WL_INTERFACE: &'static wl_interface;
+
+    /// Returns the mutable data type required by this event handler.
+    #[inline]
+    fn mutable_type() -> Option<(TypeId, &'static str)>
+    where
+        Self: Sized,
+    {
+        None
+    }
 
     /// Dispatches a raw libwayland event.
     ///
@@ -875,9 +919,12 @@ pub unsafe trait EventHandler {
     /// - `slf` must have an interface compatible with `WL_INTERFACE`.
     /// - `opcode` and `args` must conform to an event of `WL_INTERFACE`.
     /// - Any objects contained in `args` must remain valid for the duration of the call.
+    /// - If `Self::mutable_data` returns `Some`, then `data` must be `&mut T` where T has
+    ///   the type ID returned by `mutable_data`.
     unsafe fn handle_event(
         &self,
         queue: &Queue,
+        data: *mut u8,
         slf: &UntypedBorrowedProxy,
         opcode: u32,
         args: *mut wl_argument,
@@ -915,6 +962,9 @@ fn box_event_handler<T>(event_handler: T) -> (*mut u8, *mut u8) {
 /// - if T is not `Send`, then the current thread must be the thread on which the
 ///   event handler was attached
 /// - the queue lock of the proxy must be held
+/// - if `T::mutable_data` returns `Some`, then `queue.data()` must return a pointer to
+///   `T` where `T` has the type ID returned by `mutable_data` and the pointer must be
+///   mutably dereferenceable during this call.
 unsafe extern "C" fn event_handler_func<T>(
     event_handler_data: *const c_void,
     target: *mut c_void,
@@ -940,12 +990,15 @@ where
     //         - Dito, if T does not implement Send, then we're creating this reference only in the
     //           same thread on which the event_handler was attached.
     let event_handler = unsafe { &*event_handler };
+    // SAFETY: - Dito, the queue mutex is held.
+    let data = unsafe { proxy_data.queue.data() };
     let res = catch_unwind(AssertUnwindSafe(|| {
         // SAFETY: Dito, the interface of target is compatible with T::WL_INTERFACE
         //         Dito, target is a valid pointer and stays valid
         //         Dito, opcode and args conform to T::WL_INTERFACE
+        //         Dito, the data requirement is forwarded to the caller.
         unsafe {
-            event_handler.handle_event(&proxy_data.queue, &target, opcode, args);
+            event_handler.handle_event(&proxy_data.queue, data, &target, opcode, args);
         }
     }));
     if let Err(e) = res {

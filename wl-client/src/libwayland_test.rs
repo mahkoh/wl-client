@@ -884,7 +884,8 @@ impl Libwayland {
 #[cfg(test)]
 mod test {
     use {
-        crate::{Libwayland, ffi::wl_display, libwayland::Display, utils::on_drop::on_drop},
+        crate::{Libwayland, ffi::wl_display, libwayland::Display},
+        run_on_drop::on_drop,
         std::cell::Cell,
     };
 

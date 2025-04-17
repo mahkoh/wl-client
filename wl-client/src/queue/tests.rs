@@ -9,10 +9,10 @@ use {
         },
         utils::{
             block_on::block_on,
-            on_drop::on_drop,
             poller::{Poller, readable},
         },
     },
+    run_on_drop::on_drop,
     std::{
         any::Any,
         cell::Cell,

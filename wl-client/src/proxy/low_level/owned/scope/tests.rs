@@ -8,8 +8,8 @@ use {
             wl_display::WlDisplay,
             wl_root::WlRootEventHandler,
         },
-        utils::on_drop::on_drop,
     },
+    run_on_drop::on_drop,
     std::{
         cell::Cell,
         future::poll_fn,

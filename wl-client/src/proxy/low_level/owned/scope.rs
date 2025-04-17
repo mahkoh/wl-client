@@ -15,11 +15,12 @@ use {
             },
         },
         utils::{
-            on_drop::{abort_on_panic, on_drop},
+            on_drop::abort_on_panic,
             sync_cell::{SyncCell, SyncUnsafeCell},
         },
     },
     parking_lot::{Condvar, Mutex},
+    run_on_drop::on_drop,
     std::{
         ffi::{c_int, c_void},
         future::poll_fn,

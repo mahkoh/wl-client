@@ -1,9 +1,10 @@
 use {
     crate::{
         BorrowedQueue, Connection, Queue,
-        utils::{eventfd::Eventfd, executor::TaskId, on_drop::on_drop, poller},
+        utils::{eventfd::Eventfd, executor::TaskId, poller},
     },
     parking_lot::{Condvar, Mutex},
+    run_on_drop::on_drop,
     std::{
         convert::Infallible,
         future::poll_fn,

@@ -1,10 +1,9 @@
 #[expect(unused_imports)]
 use crate::Queue;
 use {
-    crate::{
-        BorrowedQueue, Connection, connection::data::ConnectionData2, utils::on_drop::on_drop,
-    },
+    crate::{BorrowedQueue, Connection, connection::data::ConnectionData2},
     parking_lot::{Condvar, Mutex},
+    run_on_drop::on_drop,
     std::{
         collections::HashMap,
         future::poll_fn,

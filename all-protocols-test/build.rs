@@ -1,7 +1,15 @@
 use {std::os::unix::ffi::OsStrExt, walkdir::WalkDir, wl_client_builder::Builder};
 
 fn main() {
-    let mut builder = Builder::default().with_default_dir(false);
+    build("wayland-protocols", false);
+    build("wayland-protocols-data", true);
+}
+
+fn build(dir: &str, with_data: bool) {
+    let mut builder = Builder::default()
+        .with_default_dir(false)
+        .with_mutable_data(with_data)
+        .target_dir(dir);
     builder = builder.xml_file("../wayland/protocol/wayland.xml");
     for dir in ["stable", "staging", "unstable"] {
         let path = format!("../wayland-protocols/{dir}");

@@ -419,6 +419,7 @@ where
     unsafe fn handle_event(
         &self,
         queue: &Queue,
+        data: *mut u8,
         slf: &UntypedBorrowedProxy,
         opcode: u32,
         args: *mut wl_argument,

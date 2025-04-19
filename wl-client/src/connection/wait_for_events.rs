@@ -1,14 +1,14 @@
 use {
     crate::{
         BorrowedQueue, Connection, Queue,
-        utils::{eventfd::Eventfd, executor::TaskId, poller},
+        utils::{eventfd::Eventfd, executor::TaskId, os_error::OsError, poller},
     },
     parking_lot::{Condvar, Mutex},
     run_on_drop::on_drop,
     std::{
         convert::Infallible,
         future::poll_fn,
-        io::{self, ErrorKind},
+        io,
         os::fd::{AsFd, AsRawFd, BorrowedFd, RawFd},
         sync::{
             Arc,
@@ -106,7 +106,7 @@ struct QueueWatcherShared {
 struct QueueWatcherMutable {
     wait_for_reset: bool,
     waker: Option<Waker>,
-    last_error: Option<ErrorKind>,
+    last_error: Option<OsError>,
     cancelled: bool,
 }
 
@@ -153,6 +153,7 @@ impl Connection {
                     }
                 }
             }
+            self.data.data.ensure_no_error()?;
             let poll_data = self.data.poller.data.clone();
             // NOTE: We cannot hold on to the lock on this thread since that could cause
             //       a deadlock when another task on this thread calls
@@ -285,7 +286,7 @@ impl Connection {
             }
             .await;
             let e = res.unwrap_err();
-            cancel_data.shared.data.lock().last_error = Some(e.kind());
+            cancel_data.shared.data.lock().last_error = Some(e.into());
             cancel_data.shared.has_error.store(true, Relaxed);
         });
         let data = Arc::new(QueueWatcherData {

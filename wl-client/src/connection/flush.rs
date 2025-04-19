@@ -6,6 +6,7 @@ use {
         connection::data::ConnectionData2,
         utils::{
             executor::Executor,
+            os_error::OsError,
             poller::{self, Poller},
         },
     },
@@ -34,7 +35,7 @@ struct Data1 {
 #[derive(Default)]
 struct Data2 {
     have_request: bool,
-    last_error: Option<ErrorKind>,
+    last_error: Option<OsError>,
     waker: Option<Waker>,
 }
 
@@ -74,7 +75,7 @@ impl Flusher {
             .await;
             let err = res.unwrap_err();
             let d = &mut *data.data.lock();
-            d.last_error = Some(err.kind());
+            d.last_error = Some(err.into());
         });
         slf
     }

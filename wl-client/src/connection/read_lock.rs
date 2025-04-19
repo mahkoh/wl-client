@@ -1,7 +1,9 @@
 #[expect(unused_imports)]
 use crate::Queue;
 use {
-    crate::{BorrowedQueue, Connection, connection::data::ConnectionData2},
+    crate::{
+        BorrowedQueue, Connection, connection::data::ConnectionData2, utils::os_error::OsError,
+    },
     parking_lot::{Condvar, Mutex},
     run_on_drop::on_drop,
     std::{
@@ -30,7 +32,7 @@ struct Data1 {
 #[derive(Default)]
 struct Data2 {
     serial: u64,
-    last_error: Option<ErrorKind>,
+    last_error: Option<OsError>,
 
     state: State,
     want_read: bool,
@@ -313,7 +315,7 @@ fn read_thread(connection: Arc<ConnectionData2>, data: Arc<Data1>) {
             d = data.data.lock();
             d.last_error = None;
             if res == -1 {
-                d.last_error = Some(io::Error::last_os_error().kind());
+                d.last_error = Some(io::Error::last_os_error().into());
             }
             d.serial += 1;
             // SAFETY: We've consumed the ticket by calling wl_display_read_events.
@@ -325,7 +327,7 @@ fn read_thread(connection: Arc<ConnectionData2>, data: Arc<Data1>) {
         }
         data.condvar.wait(&mut d);
     }
-    d.last_error = Some(ErrorKind::WouldBlock);
+    d.last_error = Some(OsError::Kind(ErrorKind::WouldBlock));
     d.serial += 1;
     for (_, waker) in d.wakers.drain() {
         waker.wake();

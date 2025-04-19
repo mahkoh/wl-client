@@ -1,5 +1,5 @@
 use {
-    crate::utils::eventfd::Eventfd,
+    crate::utils::{eventfd::Eventfd, os_error::OsError},
     io::ErrorKind,
     mio::{Events, Interest, Token, unix::SourceFd},
     parking_lot::Mutex,
@@ -30,7 +30,7 @@ pub(crate) struct PollData {
     readers: HashMap<u64, Waker>,
     writable_serial: u64,
     writers: HashMap<u64, Waker>,
-    last_error: Option<ErrorKind>,
+    last_error: Option<OsError>,
     write_fd: Option<Arc<Eventfd>>,
     thread: Option<JoinHandle<()>>,
     exit: bool,
@@ -54,7 +54,7 @@ impl Poller {
                 .spawn(move || {
                     if let Err(e) = poll_thread(con, &data, eventfd2) {
                         let d = &mut *data.lock();
-                        d.last_error = Some(e.kind());
+                        d.last_error = Some(e.into());
                         d.readable_serial += 1;
                         d.writable_serial += 1;
                         for (_, waker) in d.writers.drain().chain(d.readers.drain()) {

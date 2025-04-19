@@ -63,11 +63,13 @@ impl Fixed {
     pub const NEGATIVE_EPSILON: Self = Self(!0);
 
     /// Creates a [`Fixed`] from the raw bits that appear in the wire protocol.
+    #[inline]
     pub const fn from_wire(val: i32) -> Self {
         Self(val)
     }
 
     /// Converts this [`Fixed`] to the bits that should be set in the wire protocol.
+    #[inline]
     pub const fn to_wire(self) -> i32 {
         self.0
     }
@@ -75,6 +77,7 @@ impl Fixed {
     /// Converts this [`Fixed`] to an `f64`.
     ///
     /// This conversion is lossless.
+    #[inline]
     pub const fn to_f64(self) -> f64 {
         self.0 as f64 / fmul!()
     }
@@ -82,6 +85,7 @@ impl Fixed {
     /// Converts this [`Fixed`] to an `f32`.
     ///
     /// This conversion is lossy if there are more than 24 significant bits in this [`Fixed`].
+    #[inline]
     pub const fn to_f32_lossy(self) -> f32 {
         self.to_f64() as f32
     }
@@ -95,6 +99,7 @@ impl Fixed {
     /// - `NaN` returns [`Fixed::ZERO`].
     /// - Values larger than the maximum return [`Fixed::MAX`].
     /// - Values smaller than the minimum return [`Fixed::MIN`].
+    #[inline]
     pub const fn from_f64_lossy(val: f64) -> Self {
         Self((val * fmul!()) as i32)
     }
@@ -102,6 +107,7 @@ impl Fixed {
     /// Creates a [`Fixed`] from an `f32`.
     ///
     /// The conversion behavior is the same as for [`Fixed::from_f64_lossy`].
+    #[inline]
     pub const fn from_f32_lossy(val: f32) -> Self {
         Self((val as f64 * fmul!()) as i32)
     }
@@ -109,6 +115,7 @@ impl Fixed {
     /// Creates a [`Fixed`] from an `i32`.
     ///
     /// Values outside of the representable range are clamped to [`Fixed::MIN`] and [`Fixed::MAX`].
+    #[inline]
     pub const fn from_i32_saturating(val: i32) -> Self {
         Self(val.saturating_mul(imul!()))
     }
@@ -116,6 +123,7 @@ impl Fixed {
     /// Creates a [`Fixed`] from an `i64`.
     ///
     /// Values outside of the representable range are clamped to [`Fixed::MIN`] and [`Fixed::MAX`].
+    #[inline]
     pub const fn from_i64_saturating(val: i64) -> Self {
         let val = val.saturating_mul(imul!());
         if val > i32::MAX as i64 {
@@ -130,6 +138,7 @@ impl Fixed {
     /// Converts this [`Fixed`] to an `i32`.
     ///
     /// The conversion rounds towards the nearest integer and half-way away from 0.
+    #[inline]
     pub const fn to_i32_round_towards_nearest(self) -> i32 {
         if self.0 >= 0 {
             ((self.0 as i64 + (imul!() / 2)) / imul!()) as i32
@@ -141,6 +150,7 @@ impl Fixed {
     /// Converts this [`Fixed`] to an `i32`.
     ///
     /// The conversion rounds towards zero.
+    #[inline]
     pub const fn to_i32_round_towards_zero(self) -> i32 {
         (self.0 as i64 / imul!()) as i32
     }
@@ -148,6 +158,7 @@ impl Fixed {
     /// Converts this [`Fixed`] to an `i32`.
     ///
     /// The conversion rounds towards minus infinity.
+    #[inline]
     pub const fn to_i32_floor(self) -> i32 {
         self.0 >> shift!()
     }
@@ -155,6 +166,7 @@ impl Fixed {
     /// Converts this [`Fixed`] to an `i32`.
     ///
     /// The conversion rounds towards infinity.
+    #[inline]
     pub const fn to_i32_ceil(self) -> i32 {
         ((self.0 as i64 + imul!() - 1) >> shift!()) as i32
     }
@@ -163,6 +175,7 @@ impl Fixed {
 macro_rules! from {
     ($t:ty) => {
         impl From<$t> for Fixed {
+            #[inline]
             fn from(value: $t) -> Self {
                 Self(value as i32 * imul!())
             }
@@ -176,6 +189,7 @@ from!(i16);
 from!(u16);
 
 impl From<Fixed> for f64 {
+    #[inline]
     fn from(value: Fixed) -> Self {
         value.to_f64()
     }
@@ -198,6 +212,7 @@ macro_rules! forward_simple_immutable_binop {
         impl $big_name<$arg> for $slf {
             type Output = Fixed;
 
+            #[inline]
             fn $small_name(self, rhs: $arg) -> Self::Output {
                 Fixed(self.0 $op rhs.0)
             }
@@ -213,6 +228,7 @@ macro_rules! forward_simple_binop {
         forward_simple_immutable_binop!(&Fixed, &Fixed, $big_name, $small_name, $op);
 
         impl $assign_big_name for Fixed {
+            #[inline]
             fn $assign_small_name(&mut self, rhs: Self) {
                 self.0 $assign_op rhs.0;
             }
@@ -242,6 +258,7 @@ macro_rules! forward_complex_immutable_binop {
         impl $big_name<$arg> for $slf {
             type Output = Fixed;
 
+            #[inline]
             fn $small_name(self, rhs: $arg) -> Self::Output {
                 Fixed($small_name(self.0, rhs.0))
             }
@@ -257,6 +274,7 @@ macro_rules! forward_complex_binop {
         forward_complex_immutable_binop!(&Fixed, &Fixed, $big_name, $small_name);
 
         impl $assign_big_name for Fixed {
+            #[inline]
             fn $assign_small_name(&mut self, rhs: Self) {
                 self.0 = $small_name(self.0, rhs.0);
             }
@@ -272,6 +290,7 @@ macro_rules! forward_shiftop {
         impl $big_name<$arg> for Fixed {
             type Output = Fixed;
 
+            #[inline]
             fn $small_name(self, rhs: $arg) -> Self::Output {
                 Fixed(self.0 $op rhs)
             }
@@ -280,12 +299,14 @@ macro_rules! forward_shiftop {
         impl $big_name<$arg> for &Fixed {
             type Output = Fixed;
 
+            #[inline]
             fn $small_name(self, rhs: $arg) -> Self::Output {
                 Fixed(self.0 $op rhs)
             }
         }
 
         impl $assign_big_name<$arg> for Fixed {
+            #[inline]
             fn $assign_small_name(&mut self, rhs: $arg) {
                 self.0 $assign_op rhs;
             }
@@ -320,6 +341,7 @@ macro_rules! forward_immutable_unop {
         impl $big_name for $slf {
             type Output = Fixed;
 
+            #[inline]
             fn $small_name(self) -> Self::Output {
                 Fixed($op self.0)
             }

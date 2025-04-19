@@ -57,6 +57,8 @@
 //!
 //! ```
 //! # use wl_client_builder::Builder;
+//! #
+//! # fn no_run() {
 //! Builder::default()
 //!     // Disable build.rs behavior.
 //!     .for_build_rs(false)
@@ -64,6 +66,7 @@
 //!     .with_default_dir(false)
 //!     // ...
 //!     .build().unwrap();
+//! # }
 //! ```
 
 #![allow(clippy::collapsible_else_if, clippy::len_zero)]

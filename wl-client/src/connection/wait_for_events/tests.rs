@@ -150,3 +150,14 @@ async fn multiple_watchers() {
 
     let _ = fd.readable().await.unwrap();
 }
+
+#[tokio::test]
+async fn dispatch_error() {
+    let lib = Libwayland::open().unwrap();
+    let con = lib.connect_to_default_display().unwrap();
+    let queue = con.create_queue(c"queue name");
+    unsafe {
+        lib.inject_protocol_error(con.wl_display().as_ptr());
+    }
+    assert!(queue.wait_for_events().await.is_err());
+}

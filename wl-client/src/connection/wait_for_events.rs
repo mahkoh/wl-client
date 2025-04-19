@@ -153,6 +153,7 @@ impl Connection {
                     }
                 }
             }
+            self.data.data.ensure_no_error()?;
             let poll_data = self.data.poller.data.clone();
             // NOTE: We cannot hold on to the lock on this thread since that could cause
             //       a deadlock when another task on this thread calls

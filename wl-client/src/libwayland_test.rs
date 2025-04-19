@@ -5,7 +5,7 @@ use {
         Fixed,
         ffi::{
             WL_MARSHAL_FLAG_DESTROY, wl_argument, wl_array, wl_dispatcher_func_t, wl_display,
-            wl_event_queue, wl_interface, wl_proxy,
+            wl_event_queue, wl_interface, wl_message, wl_proxy,
         },
         protocols,
         proxy::OwnedProxy,
@@ -45,6 +45,7 @@ struct Display {
     wl_display: Proxy,
     name: CString,
     default_queue: Queue,
+    display_queue: Queue,
     lock: Mutex<()>,
     condvar: Condvar,
     client_fd: OwnedFd,
@@ -168,6 +169,27 @@ unsafe fn inc_proxy_ref_count(proxy_ptr: *mut Proxy) -> *mut Proxy {
     let proxy_mut = &mut *proxy.data.get();
     proxy_mut.ref_count += 1;
     proxy_ptr
+}
+
+unsafe extern "C" fn display_dispatcher(
+    user_data: *const c_void,
+    _target: *mut c_void,
+    opcode: u32,
+    _msg: *const wl_message,
+    args: *mut wl_argument,
+) -> c_int {
+    assert_eq!(opcode, 0);
+    let args = &*args.cast::<[wl_argument; 3]>();
+    eprintln!(
+        "error on object {:?}: {}: {:?}",
+        args[0].o,
+        args[1].u,
+        CStr::from_ptr(args[2].s)
+    );
+    let display = &*user_data.cast::<Display>();
+    let _lock = display.lock.lock();
+    display.error.set(true);
+    0
 }
 
 impl Libwayland {
@@ -611,6 +633,14 @@ impl Libwayland {
                     events: Default::default(),
                 }),
             },
+            display_queue: Queue {
+                display: ptr::null_mut(),
+                _name: None,
+                data: UnsafeCell::new(QueueMut {
+                    num_proxies: 0,
+                    events: Default::default(),
+                }),
+            },
             data: UnsafeCell::new(DisplayMut {
                 leaked_memory: false,
                 num_queues: 0,
@@ -625,8 +655,11 @@ impl Libwayland {
             destroy_blocked: Cell::new(0),
         }));
         (*display_ptr).wl_display.display = display_ptr;
-        (*display_ptr).wl_display.data.get_mut().queue = &raw mut (*display_ptr).default_queue;
+        (*display_ptr).wl_display.data.get_mut().queue = &raw mut (*display_ptr).display_queue;
+        (*display_ptr).wl_display.dispatcher_data.get_mut().func = Some(display_dispatcher);
+        (*display_ptr).wl_display.dispatcher_data.get_mut().data = display_ptr.cast();
         (*display_ptr).default_queue.display = display_ptr;
+        (*display_ptr).display_queue.display = display_ptr;
         display_ptr.cast()
     }
 
@@ -645,6 +678,11 @@ impl Libwayland {
         drop(events);
         let events = {
             let queue_mut = &mut *display.default_queue.data.get();
+            mem::take(&mut queue_mut.events)
+        };
+        drop(events);
+        let events = {
+            let queue_mut = &mut *display.display_queue.data.get();
             mem::take(&mut queue_mut.events)
         };
         drop(events);
@@ -700,9 +738,13 @@ impl Libwayland {
                 args.push(arg);
             }
         };
-        let default_queue = &display.default_queue;
+        let queues = [
+            (&display.display_queue, true),
+            (&display.default_queue, false),
+            (queue, true),
+        ];
         let mut num_dispatched = 0;
-        for (queue, user_queue) in [(default_queue, false), (queue, true)] {
+        for (queue, dispatchable) in queues {
             loop {
                 let queue_mut = &mut *queue.data.get();
                 let Some(mut event) = queue_mut.events.pop_front() else {
@@ -713,7 +755,7 @@ impl Libwayland {
                 if proxy.destroyed.load(Relaxed) {
                     continue;
                 }
-                assert!(user_queue);
+                assert!(dispatchable);
                 drop(lock);
                 let data = &mut *proxy.dispatcher_data.get();
                 if let Some(dispatcher) = data.func {
@@ -853,7 +895,6 @@ impl Libwayland {
         display.client_fd.as_raw_fd()
     }
 
-    #[expect(dead_code)]
     pub(crate) unsafe fn wl_display_create_queue(
         &self,
         display: *mut wl_display,
@@ -884,7 +925,13 @@ impl Libwayland {
 #[cfg(test)]
 mod test {
     use {
-        crate::{Libwayland, ffi::wl_display, libwayland::Display},
+        crate::{
+            Libwayland,
+            ffi::wl_display,
+            libwayland::{Argument, Display, Event},
+            proxy::OwnedProxy,
+            test_protocols::core::wl_display::WlDisplay,
+        },
         run_on_drop::on_drop,
         std::cell::Cell,
     };
@@ -899,6 +946,23 @@ mod test {
             let _on_drop = on_drop(|| FAIL_CONNECT.set(old));
             FAIL_CONNECT.set(old + 1);
             f()
+        }
+
+        pub(crate) unsafe fn inject_protocol_error(&self, display_ptr: *mut wl_display) {
+            let display = &*display_ptr.cast::<Display>();
+            let _lock = display.lock.lock();
+            let event = Event {
+                proxy: display_ptr.cast(),
+                interface: WlDisplay::WL_INTERFACE,
+                // error
+                opcode: 0,
+                args: vec![
+                    Argument::O(display_ptr.cast()),
+                    Argument::U(1),
+                    Argument::S(c"injected error".to_owned()),
+                ],
+            };
+            self.send_event(&mut *display.data.get(), event);
         }
 
         pub(crate) unsafe fn inject_error(&self, display: *mut wl_display) {

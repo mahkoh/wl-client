@@ -326,24 +326,19 @@ impl Connection {
     /// assert!(con.error().is_ok());
     /// ```
     pub fn error(&self) -> io::Result<()> {
-        // SAFETY: wl_display always returns a valid pointer
-        let err = unsafe {
-            self.data
-                .data
-                .libwayland
-                .wl_display_get_error(self.wl_display().as_ptr())
-        };
-        if err != 0 {
-            return Err(io::Error::from_raw_os_error(err));
-        }
-        Ok(())
+        self.data.data.error()
     }
 }
 
 pub(super) mod data {
     use {
-        crate::{Libwayland, ffi::wl_display, utils::sync_ptr::SyncNonNull},
+        crate::{
+            Libwayland,
+            ffi::{wl_display, wl_event_queue},
+            utils::sync_ptr::SyncNonNull,
+        },
         std::{
+            io,
             os::fd::{AsFd, BorrowedFd},
             ptr::NonNull,
             sync::atomic::{AtomicBool, Ordering::Relaxed},
@@ -367,6 +362,11 @@ pub(super) mod data {
         /// the display, e.g. to close it, they must check that this field is true and then
         /// replace it by false.
         owned: AtomicBool,
+        /// An event queue belonging to this display that has no proxies attached. This
+        /// pointer is valid until this object is dropped. We sometimes dispatch this
+        /// queue to ensure that there are no pending wl_display.error messages. Such
+        /// messages are always dispatched when any queue is dispatched.
+        dummy_queue: SyncNonNull<wl_event_queue>,
     }
 
     impl ConnectionData2 {
@@ -385,10 +385,14 @@ pub(super) mod data {
             wl_display: NonNull<wl_display>,
             owned: bool,
         ) -> Self {
+            // SAFETY: By the prerequisites of this function, wl_display is valid.
+            let queue = unsafe { libwayland.wl_display_create_queue(wl_display.as_ptr()) };
+            let queue = NonNull::new(queue).unwrap();
             Self {
                 libwayland,
                 wl_display: SyncNonNull(wl_display),
                 owned: AtomicBool::new(owned),
+                dummy_queue: SyncNonNull(queue),
             }
         }
 
@@ -416,6 +420,32 @@ pub(super) mod data {
         pub(super) fn is_owned(&self) -> bool {
             self.owned.load(Relaxed)
         }
+
+        pub(super) fn error(&self) -> io::Result<()> {
+            // SAFETY: wl_display always returns a valid pointer
+            let err = unsafe {
+                self.libwayland
+                    .wl_display_get_error(self.wl_display().as_ptr())
+            };
+            if err != 0 {
+                return Err(io::Error::from_raw_os_error(err));
+            }
+            Ok(())
+        }
+
+        pub(super) fn ensure_no_error(&self) -> io::Result<()> {
+            // SAFETY: - wl_display always returns a valid pointer
+            //         - by the invariants, dummy_queue is valid and belongs to this
+            //           display
+            //         - by the invariants, no proxies are attached to the queue
+            unsafe {
+                self.libwayland.wl_display_dispatch_queue_pending(
+                    self.wl_display().as_ptr(),
+                    self.dummy_queue.as_ptr(),
+                )
+            };
+            self.error()
+        }
     }
 
     impl AsFd for ConnectionData2 {
@@ -434,6 +464,12 @@ pub(super) mod data {
 
     impl Drop for ConnectionData2 {
         fn drop(&mut self) {
+            // SAFETY: - by the invariants, dummy_queue is valid
+            //         - by the invariants, no proxies are attached to the queue
+            unsafe {
+                self.libwayland
+                    .wl_event_queue_destroy(self.dummy_queue.as_ptr());
+            }
             if let Some(display) = self.take_ownership() {
                 // SAFETY: - we just took ownership of the wl_display
                 //         - by the invariants, the display is valid

@@ -14,6 +14,7 @@ use {
     },
     destruction::ProxyDataDestruction,
     parking_lot::Mutex,
+    run_on_drop::on_drop,
     std::{
         any::Any,
         cell::Cell,
@@ -397,16 +398,15 @@ impl UntypedOwnedProxy {
     where
         T: EventHandler + 'static,
     {
-        let (event_handler, drop_event_handler) = box_event_handler(event_handler);
         // SAFETY: - all requirements except the callability of event_handler_func are
         //           trivially satisfied
         //         - libwayland only ever calls event handlers while preserving a
         //           valid pointer to the proxy and all pointers in args
-        //         - set_event_handler3 checks that the interface of the proxy is
+        //         - set_event_handler4 checks that the interface of the proxy is
         //           T::WL_INTERFACE
         //         - libwayland ensures that opcode and args conform to the
         //           interface before calling the event handler
-        //         - set_event_handler3 sets event_handler to a pointer to T
+        //         - set_event_handler4 sets event_handler to a pointer to T
         //         - we only ever invalidate the self.event_handler or self.data
         //           pointers while the queue is idle and after having destroyed
         //           the proxy.
@@ -416,15 +416,58 @@ impl UntypedOwnedProxy {
         //           on which the queue was created
         //         - we always hold the queue lock while dispatching
         unsafe {
-            self.set_event_handler3(
+            self.set_event_handler3(event_handler, event_handler_func::<T>, None);
+        }
+    }
+
+    /// # Safety
+    ///
+    /// - if T does not implement Send, then the queue must be a local queue
+    /// - the safety requirements of event_handler_func must be satisfied whenever it is
+    ///   called
+    /// - if scope is Some, then either
+    ///   - the event handler must be destroyed before the end of 'scope, OR
+    ///   - ScopeData::handle_destruction must never run the destructions
+    unsafe fn set_event_handler3<'scope, T>(
+        &self,
+        event_handler: T,
+        event_handler_func: wl_dispatcher_func_t,
+        scope: Option<&'scope Scope<'scope, '_>>,
+    ) where
+        T: EventHandler,
+    {
+        unsafe fn drop<T>(event_handler: *mut u8) {
+            // SAFETY: This function is called only to drop the boxed event_handler.
+            unsafe {
+                let _ = Box::from_raw(event_handler.cast::<T>());
+            }
+        }
+
+        let event_handler = Box::into_raw(Box::new(event_handler)).cast();
+        let dealloc = on_drop(move || {
+            // SAFETY: - This is only called if set_event_handler4 panics, otherwise the
+            //           on_drop is forgotten.
+            //         - If set_event_handler4 panics, then it has not assumed ownership
+            //           of the event handler.
+            unsafe { drop::<T>(event_handler) }
+        });
+        // SAFETY: - interface is T::WL_INTERFACE
+        //         - event_handler is a pointer to T
+        //         - we've called Box::into_raw on the event handler so it stays valid
+        //           valid pointer to the proxy and all pointers in args
+        //         - drop_event_handler is a pointer to the deallocator
+        //         - the other requirements are forwarded to the caller of this function
+        unsafe {
+            self.set_event_handler4(
                 T::WL_INTERFACE,
                 event_handler,
-                drop_event_handler,
+                drop::<T> as *mut u8,
                 mem::needs_drop::<T>(),
-                event_handler_func::<T>,
-                None,
-            );
+                event_handler_func,
+                scope,
+            )
         }
+        dealloc.forget();
     }
 
     /// # Safety
@@ -442,7 +485,7 @@ impl UntypedOwnedProxy {
     /// - if scope is Some, then either
     ///   - the event handler must be destroyed before the end of 'scope, OR
     ///   - ScopeData::handle_destruction must never run the destructions
-    unsafe fn set_event_handler3<'scope>(
+    unsafe fn set_event_handler4<'scope>(
         &self,
         interface: &'static wl_interface,
         event_handler: *mut u8,
@@ -484,24 +527,23 @@ impl UntypedOwnedProxy {
                 });
             }
         }
+        let _queue_lock = slf.queue.lock_dispatch();
         slf.event_handler.store(event_handler, Relaxed);
         slf.drop_event_handler.store(drop_event_handler, Relaxed);
-        slf.queue.run_locked(|| {
-            // SAFETY: - we're holding the proxy lock so the proxy is valid
-            //         - we're holding the queue lock which is always held when
-            //           accessing/modifying the unprotected fields of the wl_proxy
-            //         - by the safety requirements of this function, the safety
-            //           requirements of event_handler_func are satisfied whenever it is
-            //           called
-            unsafe {
-                slf.proxy.libwayland.wl_proxy_add_dispatcher(
-                    proxy.as_ptr(),
-                    Some(event_handler_func),
-                    self.data.as_ptr() as *mut c_void,
-                    ptr::null_mut(),
-                );
-            }
-        });
+        // SAFETY: - we're holding the proxy lock so the proxy is valid
+        //         - we're holding the queue lock which is always held when
+        //           accessing/modifying the unprotected fields of the wl_proxy
+        //         - by the safety requirements of this function, the safety
+        //           requirements of event_handler_func are satisfied whenever it is
+        //           called
+        unsafe {
+            slf.proxy.libwayland.wl_proxy_add_dispatcher(
+                proxy.as_ptr(),
+                Some(event_handler_func),
+                self.data.as_ptr() as *mut c_void,
+                ptr::null_mut(),
+            );
+        }
     }
 
     /// Returns the queue of this proxy.
@@ -667,7 +709,7 @@ impl UntypedOwnedProxy {
             let _scope = slf.scope_data_arc.lock().clone();
             // SAFETY: - scope() returns the scope that this proxy is attached to.
             //         - If the destruction contains an event handler, then, by the safety
-            //           requirements of set_event_handler3, we know that
+            //           requirements of set_event_handler4, we know that
             //           - we are either within 'scope since otherwise
             //             destroy_event_handler would have been called and consumed the
             //             event handler earlier, OR
@@ -724,7 +766,7 @@ impl UntypedOwnedProxy {
             // SAFETY: - scope() returns the scope that this proxy is attached to.
             //         - Since the destruction is not a no-op, we know that this is the
             //           first call to destroy_event_handler.
-            //         - By the safety requirements of set_event_handler3, we know that
+            //         - By the safety requirements of set_event_handler4, we know that
             //           either we are within 'scope or the destruction is never run. If
             //           the destruction is never run, then there is nothing to show.
             //           Otherwise, since the event handler outlives 'scope, calling its
@@ -882,20 +924,6 @@ pub unsafe trait EventHandler {
         opcode: u32,
         args: *mut wl_argument,
     );
-}
-
-fn box_event_handler<T>(event_handler: T) -> (*mut u8, *mut u8) {
-    let event_handler = Box::into_raw(Box::new(event_handler)).cast();
-    let drop_event_handler = {
-        unsafe fn drop<T>(event_handler: *mut u8) {
-            // SAFETY: This function is called only to drop the event_handler boxed above.
-            unsafe {
-                let _ = Box::from_raw(event_handler.cast::<T>());
-            }
-        }
-        drop::<T> as *mut u8
-    };
-    (event_handler, drop_event_handler)
 }
 
 /// The event handler function.

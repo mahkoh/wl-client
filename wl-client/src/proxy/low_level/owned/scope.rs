@@ -11,7 +11,7 @@ use {
             OwnedProxy, get_owned,
             low_level::{
                 OwnedProxyRegistry, ProxyDataDestruction,
-                owned::{UntypedOwnedProxyData, box_event_handler, event_handler_func},
+                owned::{UntypedOwnedProxyData, event_handler_func},
             },
         },
         utils::{
@@ -619,23 +619,22 @@ unsafe fn set_event_handler2<'scope, P, H>(
 {
     let proxy = get_owned(proxy);
     assert_eq!(proxy.queue(), &scope.data.queue);
-    let (event_handler, drop_event_handler) = box_event_handler(event_handler);
     // SAFETY: - libwayland only ever calls event handlers while preserving a
     //           valid pointer to the proxy and all pointers in args
-    //         - set_event_handler3 checks that the interface of the proxy is
+    //         - set_event_handler4 checks that the interface of the proxy is
     //           H::WL_INTERFACE
     //         - by the safety requirements, P::WL_INTERFACE is compatible with the
     //           proxy's interface which is compatible with H::WL_INTERFACE by the
     //           previous point
     //         - libwayland ensures that opcode and args conform to the
     //           interface before calling the event handler
-    //         - set_event_handler3 sets event_handler to a pointer to H
+    //         - set_event_handler4 sets event_handler to a pointer to H
     //         - if T is not Send, then this function requires that this is a
     //           local queue which will panic when trying to call this function
     //           or any dispatching function on a thread other than the thread
     //           on which the queue was created
     //         - we always hold the queue lock while dispatching
-    //         - set_event_handler3 sets the scope_data to a pointer to the scope data
+    //         - set_event_handler4 sets the scope_data to a pointer to the scope data
     //           and stores a clone of the Arc so that the pointer will always remain
     //           valid
     //         - we only ever invalidate the self.event_handler or self.data
@@ -648,10 +647,7 @@ unsafe fn set_event_handler2<'scope, P, H>(
     //             event handlers have been destroyed.
     unsafe {
         proxy.set_event_handler3(
-            H::WL_INTERFACE,
             event_handler,
-            drop_event_handler,
-            mem::needs_drop::<H>(),
             event_handler_func_scoped::<P, H>,
             Some(scope),
         );

@@ -22,6 +22,7 @@ use {
     parking_lot::{Condvar, Mutex},
     run_on_drop::on_drop,
     std::{
+        any::TypeId,
         ffi::{c_int, c_void},
         future::poll_fn,
         marker::PhantomData,
@@ -542,15 +543,22 @@ where
     const WL_INTERFACE: &'static wl_interface = H::WL_INTERFACE;
 
     #[inline]
+    fn mutable_type() -> Option<(TypeId, &'static str)> {
+        H::mutable_type()
+    }
+
+    #[inline]
     unsafe fn handle_event(
         &self,
         queue: &Queue,
+        data: *mut u8,
         slf: &UntypedBorrowedProxy,
         opcode: u32,
         args: *mut wl_argument,
     ) {
         unsafe {
-            self.event_handler.handle_event(queue, slf, opcode, args);
+            self.event_handler
+                .handle_event(queue, data, slf, opcode, args);
         }
     }
 }
@@ -619,7 +627,9 @@ unsafe fn set_event_handler2<'scope, P, H>(
 {
     let proxy = get_owned(proxy);
     assert_eq!(proxy.queue(), &scope.data.queue);
-    // SAFETY: - libwayland only ever calls event handlers while preserving a
+    // SAFETY: - all requirements except the callability of event_handler_func as part
+    //           of a libwayland dispatch are trivially satisfied
+    //         - libwayland only ever calls event handlers while preserving a
     //           valid pointer to the proxy and all pointers in args
     //         - set_event_handler4 checks that the interface of the proxy is
     //           H::WL_INTERFACE
@@ -733,11 +743,18 @@ where
     // SAFETY: Dito, target is and stays valid.
     let target =
         unsafe { UntypedBorrowedProxy::new_immutable(proxy_data.proxy.libwayland, target) };
-    // SAFETY: Dito, the interface of the proxy is compatible with P::WL_INTERFACE
-    //         Dito, target is a valid pointer and stays valid
-    //         Dito, opcode and args conform to P::WL_INTERFACE
+    // SAFETY: Dito, the queue lock is being held.
+    let data = unsafe { proxy_data.queue.data() };
+    // SAFETY: - Dito, the interface of the proxy is compatible with P::WL_INTERFACE
+    //         - Dito, target is a valid pointer and stays valid
+    //         - Dito, opcode and args conform to P::WL_INTERFACE
+    //         - The mutable_type of the NO_OP_EVENT_HANDLER is required to be `None` or
+    //           the type ID of `()`. If it is `None`, then there is nothing to show.
+    //           Otherwise, Queue::data guarantees that `data` can be dereferenced to
+    //           `T::mutable_type` or `()` if `mutable_type` returns None. Any non-null
+    //           pointer can be dereferenced to `()`.
     unsafe {
-        P::NO_OP_EVENT_HANDLER.handle_event(&proxy_data.queue, &target, opcode, args);
+        P::NO_OP_EVENT_HANDLER.handle_event(&proxy_data.queue, data, &target, opcode, args);
     }
     0
 }

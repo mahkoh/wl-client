@@ -1,3 +1,4 @@
+pub use with_data::QueueWithData;
 use {
     crate::{
         Libwayland, QueueWatcher,
@@ -17,12 +18,14 @@ use {
         utils::{
             block_on::block_on,
             reentrant_mutex::{ReentrantMutex, ReentrantMutexGuard},
-            sync_ptr::SyncNonNull,
+            sync_cell::SyncCell,
+            sync_ptr::{SyncNonNull, SyncPtr},
         },
     },
     parking_lot::Mutex,
     run_on_drop::on_drop,
     std::{
+        any::TypeId,
         cell::{Cell, RefCell},
         ffi::{CStr, CString},
         fmt::{Debug, Formatter},
@@ -31,7 +34,7 @@ use {
         ops::Deref,
         panic::resume_unwind,
         pin::pin,
-        ptr::NonNull,
+        ptr::{self, NonNull},
         sync::Arc,
         task::{Poll, Waker},
         thread::panicking,
@@ -40,6 +43,7 @@ use {
 
 #[cfg(test)]
 mod tests;
+mod with_data;
 
 /// The owner of an event queue.
 ///
@@ -195,14 +199,19 @@ pub struct QueueOwner {
 ///
 /// - The lock is held for the entirety of the following function calls:
 ///   - [`Queue::dispatch_pending`]
+///   - [`QueueWithData::dispatch_pending`]
 /// - The lock is sometimes held during the following function calls but not while they
 ///   are waiting for new events:
 ///   - [`Queue::dispatch_blocking`]
 ///   - [`Queue::dispatch_roundtrip_blocking`]
+///   - [`QueueWithData::dispatch_blocking`]
+///   - [`QueueWithData::dispatch_roundtrip_blocking`]
 /// - The lock is sometimes held while the futures produced by the following functions
 ///   are being polled but not while they are waiting for new events:
 ///   - [`Queue::dispatch_async`]
 ///   - [`Queue::dispatch_roundtrip_async`]
+///   - [`QueueWithData::dispatch_async`]
+///   - [`QueueWithData::dispatch_roundtrip_async`]
 /// - The lock is held at the start and the end of the following function calls but not
 ///   while invoking the callback:
 ///   - [`Queue::dispatch_scope_blocking`]
@@ -311,6 +320,18 @@ struct QueueData {
     /// - the unsynchronized fields of any proxies attached to the queue
     /// - the fields is_dispatching and to_destroy below
     mutex: ReentrantMutex<DispatchData>,
+    /// The type of mutable data passed to event handlers attached to this queue. Each
+    /// event handler attached to this queue must
+    /// - not use any mutable data,
+    /// - use mutable data of type `()`, or
+    /// - use mutable data of this type.
+    mut_data_type: Option<TypeId>,
+    /// The name of mut_data_type, if any. This field is only used for panic messages.
+    mut_data_type_name: Option<&'static str>,
+    /// This field is protected by the mutex. It always contains a non-null pointer that
+    /// can be dereferenced to `&mut ()`. During dispatch, if `mut_data_type` is not
+    /// `None`, it contains a pointer to the data that was passed into `dispatch_pending`.
+    mut_data: SyncCell<SyncPtr<u8>>,
     /// The registry for proxies that need manual destruction when the connection is
     /// dropped.
     owned_proxy_registry: OwnedProxyRegistry,
@@ -544,13 +565,20 @@ impl Queue {
     /// event loop, as it might block indefinitely. Use [`Connection::create_watcher`] and
     /// [`Queue::dispatch_pending`] instead.
     ///
+    /// This function cannot be used if the queue was created with
+    /// [`Connection::create_queue_with_data`] or
+    /// [`Connection::create_local_queue_with_data`]. Use
+    /// [`QueueWithData::dispatch_blocking`] instead.
+    ///
     /// The returned number is the number of events that have been dispatched by this
     /// call. The number can be zero if another thread dispatched the events before us.
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the current
-    /// thread is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -578,8 +606,10 @@ impl Queue {
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the thread
-    /// polling the future is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the thread
+    ///   polling the future is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -611,12 +641,19 @@ impl Queue {
     /// [`Queue::create_watcher`] to dispatch the queue in an async context or event loop
     /// respectively.
     ///
+    /// This function cannot be used if the queue was created with
+    /// [`Connection::create_queue_with_data`] or
+    /// [`Connection::create_local_queue_with_data`]. Use
+    /// [`QueueWithData::dispatch_pending`] instead.
+    ///
     /// The returned number is the number of events that were dispatched.
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the current
-    /// thread is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -651,6 +688,24 @@ impl Queue {
     /// ```
     pub fn dispatch_pending(&self) -> io::Result<u64> {
         let d = &*self.queue_data;
+        if d.mut_data_type.is_some() {
+            panic!(
+                "Queue requires mutable data of type `{}` to be dispatched",
+                d.mut_data_type_name.unwrap(),
+            );
+        }
+        // SAFETY: - We've just checked that `mut_data_type` is None and
+        //           `&mut () = &mut U`.
+        unsafe { self.dispatch_pending_internal(ptr::from_mut(&mut ()).cast()) }
+    }
+
+    /// # Safety
+    ///
+    /// - If `self.mut_data_type` is Some, then `mut_data` must be a `&mut T` where
+    ///   `T` has the type ID `self.mut_data_type`.
+    /// - Otherwise `mut_data` must be `&mut U` for any `U`.
+    unsafe fn dispatch_pending_internal(&self, mut_data: *mut u8) -> io::Result<u64> {
+        let d = &*self.queue_data;
         let _resume_unwind = on_drop(|| {
             if let Some(err) = DISPATCH_PANIC.take() {
                 if !panicking() {
@@ -659,6 +714,19 @@ impl Queue {
             }
         });
         let res = self.with_dispatch(|| {
+            let md = &self.queue_data.mut_data;
+            // SAFETY: - We're holding the queue lock.
+            //         - If mut_data_type is Some, then mut_data is `&mut T` where T has
+            //           the type ID mut_data_type.
+            let prev_mut_data = unsafe { md.replace(SyncPtr(mut_data)) };
+            let _reset_mut_data = on_drop(|| {
+                // SAFETY: - This closure runs before exiting the with_dispatch callback,
+                //           so we're still holding the queue lock.
+                //         - If this is a nested dispatch, then that dispatch had already
+                //           started when we entered the with_dispatch callback, therefore
+                //           prev_mut_data satisfies all of the requirements.
+                unsafe { md.set(prev_mut_data) }
+            });
             // SAFETY: - by the invariants, the display and queue are valid
             //         - the queue was created from the display
             //         - we're inside with_dispatch which means that we're holding the
@@ -690,14 +758,21 @@ impl Queue {
     /// during initialization to receive the full list of supported formats before
     /// returning.
     ///
+    /// This function cannot be used if the queue was created with
+    /// [`Connection::create_queue_with_data`] or
+    /// [`Connection::create_local_queue_with_data`]. Use
+    /// [`QueueWithData::dispatch_roundtrip_blocking`] instead.
+    ///
     /// If this function returns `Ok(())`, then the function returns after (in the sense
     /// of the C++ memory model) the event handlers of all previous events have been
     /// invoked.
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the current
-    /// thread is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the current
+    ///   thread is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -744,8 +819,10 @@ impl Queue {
     ///
     /// # Panic
     ///
-    /// Panics if this is a [local queue](Connection::create_local_queue) and the thread
-    /// polling the future is not the thread that this queue was created in.
+    /// - Panics if this is a [local queue](Connection::create_local_queue) and the thread
+    ///   polling the future is not the thread that this queue was created in.
+    /// - Panics if the queue was created with [`Connection::create_queue_with_data`] or
+    ///   [`Connection::create_local_queue_with_data`].
     ///
     /// # Example
     ///
@@ -779,6 +856,14 @@ impl Queue {
     /// # });
     /// ```
     pub async fn dispatch_roundtrip_async(&self) -> io::Result<()> {
+        self.dispatch_roundtrip_async_internal(|| self.dispatch_pending())
+            .await
+    }
+
+    async fn dispatch_roundtrip_async_internal(
+        &self,
+        mut dispatch_pending: impl FnMut() -> io::Result<u64>,
+    ) -> io::Result<()> {
         #[derive(Default)]
         struct State {
             ready: bool,
@@ -833,7 +918,7 @@ impl Queue {
             if ready {
                 return Ok(());
             }
-            self.dispatch_pending()?;
+            dispatch_pending()?;
         }
     }
 
@@ -1097,7 +1182,7 @@ impl Connection {
     /// let _queue = con.create_queue(c"queue name");
     /// ```
     pub fn create_queue(&self, name: &CStr) -> QueueOwner {
-        self.create_queue2(name, false)
+        self.create_queue2(name, false, None, None)
     }
 
     /// Creates a new local queue.
@@ -1116,11 +1201,17 @@ impl Connection {
     /// let _queue = con.create_local_queue(c"queue name");
     /// ```
     pub fn create_local_queue(&self, name: &CStr) -> QueueOwner {
-        self.create_queue2(name, true)
+        self.create_queue2(name, true, None, None)
     }
 
     /// Creates a new queue.
-    fn create_queue2(&self, name: &CStr, local: bool) -> QueueOwner {
+    fn create_queue2(
+        &self,
+        name: &CStr,
+        local: bool,
+        mut_data_type: Option<TypeId>,
+        mut_data_type_name: Option<&'static str>,
+    ) -> QueueOwner {
         // SAFETY: The display is valid and queue_name is a CString.
         let queue = unsafe {
             self.libwayland()
@@ -1141,6 +1232,9 @@ impl Connection {
                         true => ReentrantMutex::new_thread_local(Default::default()),
                         false => ReentrantMutex::new_shared(Default::default()),
                     },
+                    mut_data_type,
+                    mut_data_type_name,
+                    mut_data: SyncCell::new(SyncPtr(ptr::from_mut(&mut ()).cast())),
                     owned_proxy_registry: Default::default(),
                 }),
             },

@@ -32,6 +32,19 @@
 //! }
 //! ```
 //!
+//! # Enabling mutable data
+//!
+//! If you want to pass mutable data to event handlers, you must explicitly enable the
+//! `mutable_data` flag:
+//!
+//! ```
+//! # use wl_client_builder::Builder;
+//! #
+//! # fn no_run() {
+//! Builder::default().with_mutable_data(true).build().unwrap();
+//! # }
+//! ```
+//!
 //! # Generating code with the CLI
 //!
 //! Wrappers can be generated ahead of time with the [`wl-client-builder`] application.

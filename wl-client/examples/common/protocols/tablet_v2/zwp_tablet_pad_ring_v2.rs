@@ -329,7 +329,7 @@ pub trait ZwpTabletPadRingV2EventHandler {
 
 impl ZwpTabletPadRingV2EventHandler for private::NoOpEventHandler {}
 
-// SAFETY: INTERFACE is a valid wl_interface
+// SAFETY: - INTERFACE is a valid wl_interface
 unsafe impl<H> EventHandler for private::EventHandler<H>
 where
     H: ZwpTabletPadRingV2EventHandler,
@@ -340,11 +340,12 @@ where
     unsafe fn handle_event(
         &self,
         queue: &Queue,
+        data: *mut u8,
         slf: &UntypedBorrowedProxy,
         opcode: u32,
         args: *mut wl_argument,
     ) {
-        // SAFETY: This function required that slf has the interface INTERFACE
+        // SAFETY: This function requires that slf has the interface INTERFACE
         let slf = unsafe { proxy::low_level::from_untyped_borrowed::<ZwpTabletPadRingV2Ref>(slf) };
         match opcode {
             0 => {

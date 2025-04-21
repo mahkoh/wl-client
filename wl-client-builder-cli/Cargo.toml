@@ -1,6 +1,6 @@
 [package]
 name = "wl-client-builder-cli"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.85.0"
 license = "MIT OR Apache-2.0"
@@ -15,5 +15,5 @@ path = "src/main.rs"
 
 [dependencies]
 clap = { version = "4.5.32", features = ["derive"] }
-wl-client-builder = { version = "0.1.0", path = "../wl-client-builder" }
+wl-client-builder = { version = "0.2.0", path = "../wl-client-builder" }
 error_reporter = "1.0.0"

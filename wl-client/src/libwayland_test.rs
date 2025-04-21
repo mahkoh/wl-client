@@ -13,6 +13,7 @@ use {
             wl_callback::WlCallback, wl_display::WlDisplay, wl_dummy::WlDummy,
             wl_registry::WlRegistry, wl_root::WlRoot, wl_string::WlString,
         },
+        test_protocols_data,
     },
     isnt::std_1::{primitive::IsntMutPtrExt, vec::IsntVecExt},
     parking_lot::{Condvar, Mutex},
@@ -263,6 +264,8 @@ impl Libwayland {
                 0 => {
                     if interface != WlCallback::WL_INTERFACE
                         && interface != protocols::wayland::wl_callback::WlCallback::WL_INTERFACE
+                        && interface
+                            != test_protocols_data::core::wl_callback::WlCallback::WL_INTERFACE
                     {
                         unreachable!();
                     }

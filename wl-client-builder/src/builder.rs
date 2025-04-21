@@ -36,6 +36,7 @@ enum BuilderError {
 pub struct Builder {
     build_script: bool,
     add_default_dir: bool,
+    mutable_data: bool,
     target_dir: Option<PathBuf>,
     files: Vec<PathBuf>,
     dirs: Vec<PathBuf>,
@@ -47,6 +48,7 @@ impl Default for Builder {
         Self {
             build_script: true,
             add_default_dir: true,
+            mutable_data: false,
             target_dir: Default::default(),
             files: Default::default(),
             dirs: Default::default(),
@@ -107,6 +109,16 @@ impl Builder {
     /// interpreted relative to `$OUT_DIR`.
     pub fn target_dir(mut self, target_dir: impl AsRef<Path>) -> Self {
         self.target_dir = Some(target_dir.as_ref().to_path_buf());
+        self
+    }
+
+    /// Enables or disables mutable data parameters.
+    ///
+    /// This is disabled by default. If it is enabled, event handlers take an additional
+    /// parameter that gives access to mutable data that was passed in when dispatching
+    /// a queue.
+    pub fn with_mutable_data(mut self, mutable_data: bool) -> Self {
+        self.mutable_data = mutable_data;
         self
     }
 
@@ -178,6 +190,7 @@ impl Builder {
                         format_interface_file(
                             f,
                             self.wl_client_path.as_deref().unwrap_or("::wl_client"),
+                            self.mutable_data,
                             &interface,
                         )
                     })?;

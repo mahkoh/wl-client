@@ -45,6 +45,7 @@ fn format_interface_header(
 pub fn format_interface_file(
     w: &mut impl Write,
     root: &str,
+    mutable_data: bool,
     interface: &Interface,
 ) -> io::Result<()> {
     define_w!(w);
@@ -58,13 +59,13 @@ pub fn format_interface_file(
     wl!()?;
     format_interface_requests(w, interface)?;
     wl!()?;
-    format_interface_event_handler(w, interface)?;
+    format_interface_event_handler(w, mutable_data, interface)?;
     wl!()?;
-    format_event_handler(w, interface)?;
+    format_event_handler(w, mutable_data, interface)?;
     wl!()?;
     format_interface_enums(w, interface)?;
     wl!()?;
-    format_event_handlers(w, interface)?;
+    format_event_handlers(w, mutable_data, interface)?;
     Ok(())
 }
 
@@ -557,7 +558,11 @@ fn format_since(
     Ok(())
 }
 
-fn format_interface_event_handler(w: &mut impl Write, interface: &Interface) -> io::Result<()> {
+fn format_interface_event_handler(
+    w: &mut impl Write,
+    mutable_data: bool,
+    interface: &Interface,
+) -> io::Result<()> {
     define_w!(w);
     let snake = &interface.name;
     let camel = format_camel(snake).to_string();
@@ -575,6 +580,10 @@ fn format_interface_event_handler(w: &mut impl Write, interface: &Interface) -> 
     wl!(r#"/// An event handler for [{camel}] proxies."#)?;
     wl!(r#"#[allow(dead_code)]"#)?;
     wl!(r#"pub trait {camel}EventHandler {{"#)?;
+    if mutable_data {
+        wl!(r#"    type Data: 'static;"#)?;
+        wl!()?;
+    }
     for (idx, event) in interface.events.iter().enumerate() {
         if idx > 0 {
             wl!()?;
@@ -583,6 +592,9 @@ fn format_interface_event_handler(w: &mut impl Write, interface: &Interface) -> 
         wl!(r#"    #[inline]"#)?;
         wl!(r#"    fn {}("#, escape_name(&event.name))?;
         wl!(r#"        &self,"#)?;
+        if mutable_data {
+            wl!(r#"        _data: &mut Self::Data,"#)?;
+        }
         wl!(r#"        _slf: &{camel}Ref,"#)?;
         for arg in &event.args {
             wl!(
@@ -599,7 +611,14 @@ fn format_interface_event_handler(w: &mut impl Write, interface: &Interface) -> 
     }
     wl!(r#"}}"#)?;
     wl!()?;
-    wl!(r#"impl {camel}EventHandler for private::NoOpEventHandler {{ }}"#)?;
+    w!(r#"impl {camel}EventHandler for private::NoOpEventHandler {{"#)?;
+    if mutable_data {
+        wl!()?;
+        wl!(r#"    type Data = ();"#)?;
+        wl!(r#"}}"#)?;
+    } else {
+        wl!(r#" }}"#)?;
+    }
     Ok(())
 }
 
@@ -832,30 +851,53 @@ fn format_description(
     Ok(())
 }
 
-fn format_event_handler(w: &mut impl Write, interface: &Interface) -> io::Result<()> {
+fn format_event_handler(
+    w: &mut impl Write,
+    mutable_data: bool,
+    interface: &Interface,
+) -> io::Result<()> {
     define_w!(w);
     let snake = &interface.name;
     let camel = format_camel(snake).to_string();
-    wl!(r#"// SAFETY: INTERFACE is a valid wl_interface"#)?;
+    wl!(r#"// SAFETY: - INTERFACE is a valid wl_interface"#)?;
+    if mutable_data {
+        wl!(r#"//         - mutable_type always returns the same value"#)?;
+    }
     wl!(r#"unsafe impl<H> EventHandler for private::EventHandler<H>"#)?;
     wl!(r#"where"#)?;
     wl!(r#"    H: {camel}EventHandler,"#)?;
     wl!(r#"{{"#)?;
     wl!(r#"    const WL_INTERFACE: &'static wl_interface = &INTERFACE;"#)?;
+    if mutable_data {
+        wl!()?;
+        wl!(r#"    #[inline]"#)?;
+        wl!(r#"    fn mutable_type() -> Option<(TypeId, &'static str)> {{"#)?;
+        wl!(r#"        let id = TypeId::of::<H::Data>();"#)?;
+        wl!(r#"        let name = std::any::type_name::<H::Data>();"#)?;
+        wl!(r#"        Some((id, name))"#)?;
+        wl!(r#"    }}"#)?;
+    }
     wl!()?;
     wl!(r#"    #[allow(unused_variables)]"#)?;
     wl!(r#"    unsafe fn handle_event("#)?;
     wl!(r#"        &self,"#)?;
     wl!(r#"        queue: &Queue,"#)?;
+    wl!(r#"        data: *mut u8,"#)?;
     wl!(r#"        slf: &UntypedBorrowedProxy,"#)?;
     wl!(r#"        opcode: u32,"#)?;
     wl!(r#"        args: *mut wl_argument,"#)?;
     wl!(r#"    ) {{"#)?;
     if interface.events.len() > 0 {
-        wl!(r#"        // SAFETY: This function required that slf has the interface INTERFACE"#)?;
+        wl!(r#"        // SAFETY: This function requires that slf has the interface INTERFACE"#)?;
         wl!(
             r#"        let slf = unsafe {{ proxy::low_level::from_untyped_borrowed::<{camel}Ref>(slf) }};"#
         )?;
+        if mutable_data {
+            wl!(r#"        // SAFETY: This function requires that data is `&mut T` where `T`"#)?;
+            wl!(r#"        //         has the type id returned by `Self::mutable_type`, i.e.,"#)?;
+            wl!(r#"        //         `T = H::Data`."#)?;
+            wl!(r#"        let data: &mut H::Data = unsafe {{ &mut *data.cast() }};"#)?;
+        }
         wl!(r#"        match opcode {{"#)?;
         for (idx, event) in interface.events.iter().enumerate() {
             wl!(r#"            {idx} => {{"#)?;
@@ -985,7 +1027,7 @@ fn format_event_handler(w: &mut impl Write, interface: &Interface) -> io::Result
                             wl!(
                                 r#"{prefix}    std::slice::from_raw_parts(a.data.cast(), a.size)"#
                             )?;
-                            wl!(r#"}};"#)?;
+                            wl!(r#"{prefix}}};"#)?;
                         }
                         ArgType::Fd => {
                             wl!(
@@ -995,7 +1037,11 @@ fn format_event_handler(w: &mut impl Write, interface: &Interface) -> io::Result
                     }
                 }
             }
-            w!(r#"{prefix}self.0.{}(slf"#, escape_name(&event.name))?;
+            w!(r#"{prefix}self.0.{}("#, escape_name(&event.name))?;
+            if mutable_data {
+                w!(r#"data, "#)?;
+            }
+            w!(r#"slf"#)?;
             for idx in 0..event.args.len() {
                 w!(r#", arg{idx}"#)?;
             }
@@ -1330,7 +1376,11 @@ fn format_interface_enums(w: &mut impl Write, interface: &Interface) -> io::Resu
     Ok(())
 }
 
-fn format_event_handlers(w: &mut impl Write, interface: &Interface) -> io::Result<()> {
+fn format_event_handlers(
+    w: &mut impl Write,
+    mutable_data: bool,
+    interface: &Interface,
+) -> io::Result<()> {
     define_w!(w);
     let if_camel = format_camel(&interface.name).to_string();
     wl!(r#"/// Functional event handlers."#)?;
@@ -1340,19 +1390,42 @@ fn format_event_handlers(w: &mut impl Write, interface: &Interface) -> io::Resul
         let camel = format_camel(&event.name).to_string();
         wl!()?;
         wl!(r#"    /// Event handler for {} events."#, event.name)?;
-        wl!(r#"    pub struct {camel}<F>(F);"#)?;
-        wl!(r#"    impl<F> {if_camel}EventHandler for {camel}<F>"#)?;
+        let data_param = match mutable_data {
+            true => "T, ",
+            false => "",
+        };
+        let phantom_data = match mutable_data {
+            true => ", PhantomData<fn(&mut T)>",
+            false => "",
+        };
+        wl!(r#"    pub struct {camel}<{data_param}F>(F{phantom_data});"#)?;
+        wl!(r#"    impl<{data_param}F> {if_camel}EventHandler for {camel}<{data_param}F>"#)?;
         wl!(r#"    where"#)?;
-        w!(r#"        F: Fn(&{if_camel}Ref"#)?;
+        if mutable_data {
+            wl!(r#"        T: 'static,"#)?;
+        }
+        let data_param = match mutable_data {
+            true => "&mut T, ",
+            false => "",
+        };
+        w!(r#"        F: Fn({data_param}&{if_camel}Ref"#)?;
         for arg in &event.args {
             w!(", {}", arg_type(interface, arg, false))?;
         }
         wl!(r#"),"#)?;
         wl!(r#"    {{"#)?;
+        if mutable_data {
+            wl!(r#"        type Data = T;"#)?;
+            wl!()?;
+        }
         wl!(r#"        #[inline]"#)?;
+        let data_param = match mutable_data {
+            true => ", _data: &mut T",
+            false => "",
+        };
         w!(
-            r#"        fn {}(&self, _slf: &{if_camel}Ref"#,
-            escape_name(&event.name)
+            r#"        fn {}(&self{data_param}, _slf: &{if_camel}Ref"#,
+            escape_name(&event.name),
         )?;
         for arg in &event.args {
             w!(
@@ -1362,7 +1435,11 @@ fn format_event_handlers(w: &mut impl Write, interface: &Interface) -> io::Resul
             )?;
         }
         wl!(r#") {{"#)?;
-        w!(r#"            self.0(_slf"#)?;
+        w!(r#"            self.0("#)?;
+        if mutable_data {
+            w!(r#"_data, "#)?;
+        }
+        w!(r#"_slf"#)?;
         for arg in &event.args {
             w!(", {}", escape_name(&arg.name))?;
         }
@@ -1384,15 +1461,33 @@ fn format_event_handlers(w: &mut impl Write, interface: &Interface) -> io::Resul
         wl!(r#"        ///"#)?;
         wl!(r#"        /// The event handler ignores all other events."#)?;
         wl!(r#"        #[allow(dead_code)]"#)?;
-        wl!(r#"        pub fn on_{}<F>(f: F) -> {camel}<F>"#, event.name,)?;
+        let data_param = match mutable_data {
+            true => "T, ",
+            false => "",
+        };
+        wl!(
+            r#"        pub fn on_{}<{data_param}F>(f: F) -> {camel}<{data_param}F>"#,
+            event.name,
+        )?;
         wl!(r#"        where"#)?;
-        w!(r#"            F: Fn(&{if_camel}Ref"#)?;
+        if mutable_data {
+            wl!(r#"            T: 'static,"#)?;
+        }
+        let data_param = match mutable_data {
+            true => "&mut T, ",
+            false => "",
+        };
+        w!(r#"            F: Fn({data_param}&{if_camel}Ref"#)?;
         for arg in &event.args {
             w!(", {}", arg_type(interface, arg, false))?;
         }
         wl!(r#"),"#)?;
         wl!(r#"        {{"#)?;
-        wl!(r#"            {camel}(f)"#)?;
+        let phantom_data = match mutable_data {
+            true => ", PhantomData",
+            false => "",
+        };
+        wl!(r#"            {camel}(f{phantom_data})"#)?;
         wl!(r#"        }}"#)?;
     }
     wl!(r#"    }}"#)?;

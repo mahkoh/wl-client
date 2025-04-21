@@ -111,6 +111,8 @@ mod tests;
 /// - It must be safe to transmute this type from an [`UntypedOwnedProxy`] that has an
 ///   interface that is compatible with `WL_INTERFACE`.
 /// - The interface of the contained proxy must be compatible with `WL_INTERFACE`.
+/// - The [`EventHandler::mutable_type`] of the [`OwnedProxy::NoOpEventHandler`] must be
+///   `None` or the type ID of `()`.
 pub unsafe trait OwnedProxy: UntypedOwnedProxyWrapper {
     /// The name of the interface.
     const INTERFACE: &'static str;
@@ -222,8 +224,10 @@ pub fn destroy(proxy: &impl UntypedOwnedProxyWrapper) {
 /// - the proxy has already been destroyed,
 /// - the proxy is a wrapper,
 /// - the proxy is attached to a local queue and the current thread is not the thread in
-///   which the queue was created, or
-/// - the proxy already has an event handler.
+///   which the queue was created,
+/// - the proxy already has an event handler, or
+/// - the event handler accepts a `&mut T`, `T != ()`, and the queue that the proxy
+///   is attached to was not created with this data type.
 ///
 /// This function also panics if the interface of the created handler is not the same as
 /// the interface of the proxy. However, this cannot happen if you're using the bindings

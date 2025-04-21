@@ -16,6 +16,13 @@ impl<T> SyncCell<T> {
     /// # Safety
     ///
     /// The caller must have exclusive access to self.
+    pub(crate) unsafe fn replace(&self, value: T) -> T {
+        self.t.replace(value)
+    }
+
+    /// # Safety
+    ///
+    /// The caller must have exclusive access to self.
     pub(crate) unsafe fn set(&self, value: T) {
         self.t.set(value);
     }

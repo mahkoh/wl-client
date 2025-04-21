@@ -471,7 +471,7 @@ pub trait XdgPositionerEventHandler {}
 
 impl XdgPositionerEventHandler for private::NoOpEventHandler {}
 
-// SAFETY: INTERFACE is a valid wl_interface
+// SAFETY: - INTERFACE is a valid wl_interface
 unsafe impl<H> EventHandler for private::EventHandler<H>
 where
     H: XdgPositionerEventHandler,
@@ -482,6 +482,7 @@ where
     unsafe fn handle_event(
         &self,
         queue: &Queue,
+        data: *mut u8,
         slf: &UntypedBorrowedProxy,
         opcode: u32,
         args: *mut wl_argument,

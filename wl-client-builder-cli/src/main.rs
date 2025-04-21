@@ -8,6 +8,12 @@ use {
 /// Generate safe protocol wrappers for the `wl-client` crate.
 #[derive(Parser, Debug)]
 struct Cli {
+    /// Enables mutable data parameters.
+    ///
+    /// If this flag is enabled, event handlers take an additional parameter that gives
+    /// access to mutable data that was passed in when dispatching a queue.
+    #[clap(long)]
+    mutable_data: bool,
     /// The directory to generate code into.
     ///
     /// The generated code will be available via the `mod.rs` file in this directory.
@@ -39,6 +45,7 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
     let mut builder = Builder::default()
+        .with_mutable_data(cli.mutable_data)
         .with_default_dir(false)
         .for_build_rs(false)
         .target_dir(&cli.out_dir);

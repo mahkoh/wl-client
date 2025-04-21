@@ -384,7 +384,7 @@ pub trait WlSubsurfaceEventHandler {}
 
 impl WlSubsurfaceEventHandler for private::NoOpEventHandler {}
 
-// SAFETY: INTERFACE is a valid wl_interface
+// SAFETY: - INTERFACE is a valid wl_interface
 unsafe impl<H> EventHandler for private::EventHandler<H>
 where
     H: WlSubsurfaceEventHandler,
@@ -395,6 +395,7 @@ where
     unsafe fn handle_event(
         &self,
         queue: &Queue,
+        data: *mut u8,
         slf: &UntypedBorrowedProxy,
         opcode: u32,
         args: *mut wl_argument,

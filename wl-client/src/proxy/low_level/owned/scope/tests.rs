@@ -510,6 +510,7 @@ mod leaking {
             unsafe fn handle_event(
                 &self,
                 _: &Queue,
+                _: *mut u8,
                 _: &UntypedBorrowedProxy,
                 _: u32,
                 _: *mut wl_argument,

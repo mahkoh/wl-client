@@ -738,6 +738,7 @@ pub struct WlOutputMode(pub u32);
 ///
 /// You can construct this with the `IntoIterator` implementation of `WlOutputMode`.
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct WlOutputModeIter(pub u32);
 
 impl WlOutputMode {

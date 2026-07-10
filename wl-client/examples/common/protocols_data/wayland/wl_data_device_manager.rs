@@ -334,6 +334,7 @@ pub struct WlDataDeviceManagerDndAction(pub u32);
 ///
 /// You can construct this with the `IntoIterator` implementation of `WlDataDeviceManagerDndAction`.
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct WlDataDeviceManagerDndActionIter(pub u32);
 
 impl WlDataDeviceManagerDndAction {

@@ -798,6 +798,7 @@ pub struct WlShellSurfaceResize(pub u32);
 ///
 /// You can construct this with the `IntoIterator` implementation of `WlShellSurfaceResize`.
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct WlShellSurfaceResizeIter(pub u32);
 
 impl WlShellSurfaceResize {
@@ -1113,6 +1114,7 @@ pub struct WlShellSurfaceTransient(pub u32);
 ///
 /// You can construct this with the `IntoIterator` implementation of `WlShellSurfaceTransient`.
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct WlShellSurfaceTransientIter(pub u32);
 
 impl WlShellSurfaceTransient {

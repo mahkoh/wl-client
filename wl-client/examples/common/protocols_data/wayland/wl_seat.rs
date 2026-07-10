@@ -541,6 +541,7 @@ pub struct WlSeatCapability(pub u32);
 ///
 /// You can construct this with the `IntoIterator` implementation of `WlSeatCapability`.
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct WlSeatCapabilityIter(pub u32);
 
 impl WlSeatCapability {

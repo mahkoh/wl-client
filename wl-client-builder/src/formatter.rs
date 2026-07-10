@@ -1125,6 +1125,7 @@ fn format_interface_enums(w: &mut impl Write, interface: &Interface) -> io::Resu
                 r#"/// You can construct this with the `IntoIterator` implementation of `{camel}`."#
             )?;
             wl!(r#"#[derive(Clone, Debug)]"#)?;
+            wl!(r#"#[allow(dead_code)]"#)?;
             wl!(r#"pub struct {camel}Iter(pub u32);"#)?;
         }
         if enum_.entries.len() > 0 {

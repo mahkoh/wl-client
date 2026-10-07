@@ -200,10 +200,21 @@ impl PartialEq<WlDataDevice> for WlDataDeviceRef {
 
 #[allow(dead_code)]
 impl WlDataDevice {
+    /// Since when the start_drag request is available.
+    #[allow(dead_code)]
+    pub const REQ__START_DRAG__SINCE: u32 = 1;
+
+    /// Since when the set_selection request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_SELECTION__SINCE: u32 = 1;
+
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 2;
+}
 
+#[allow(dead_code)]
+impl WlDataDevice {
     /// destroy data device
     ///
     /// This request destroys the data device.

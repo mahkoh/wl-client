@@ -281,6 +281,49 @@ impl WlSurface {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the attach request is available.
+    #[allow(dead_code)]
+    pub const REQ__ATTACH__SINCE: u32 = 1;
+
+    /// Since when the damage request is available.
+    #[allow(dead_code)]
+    pub const REQ__DAMAGE__SINCE: u32 = 1;
+
+    /// Since when the frame request is available.
+    #[allow(dead_code)]
+    pub const REQ__FRAME__SINCE: u32 = 1;
+
+    /// Since when the set_opaque_region request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_OPAQUE_REGION__SINCE: u32 = 1;
+
+    /// Since when the set_input_region request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_INPUT_REGION__SINCE: u32 = 1;
+
+    /// Since when the commit request is available.
+    #[allow(dead_code)]
+    pub const REQ__COMMIT__SINCE: u32 = 1;
+
+    /// Since when the set_buffer_transform request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_BUFFER_TRANSFORM__SINCE: u32 = 2;
+
+    /// Since when the set_buffer_scale request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_BUFFER_SCALE__SINCE: u32 = 3;
+
+    /// Since when the damage_buffer request is available.
+    #[allow(dead_code)]
+    pub const REQ__DAMAGE_BUFFER__SINCE: u32 = 4;
+
+    /// Since when the offset request is available.
+    #[allow(dead_code)]
+    pub const REQ__OFFSET__SINCE: u32 = 5;
+}
+
+#[allow(dead_code)]
+impl WlSurface {
     /// delete surface
     ///
     /// Deletes the surface and invalidates its object ID.
@@ -294,10 +337,6 @@ impl WlSurface {
             self.proxy.send_destructor(0, &mut args);
         }
     }
-
-    /// Since when the frame request is available.
-    #[allow(dead_code)]
-    pub const REQ__FRAME__SINCE: u32 = 1;
 
     /// request a frame throttling hint
     ///

@@ -126,6 +126,13 @@ impl WpCursorShapeDeviceV1 {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the set_shape request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_SHAPE__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WpCursorShapeDeviceV1 {
     /// destroy the cursor shape device
     ///
     /// Destroy the cursor shape device.

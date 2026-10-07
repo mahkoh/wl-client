@@ -211,6 +211,29 @@ impl WlSubsurface {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the set_position request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_POSITION__SINCE: u32 = 1;
+
+    /// Since when the place_above request is available.
+    #[allow(dead_code)]
+    pub const REQ__PLACE_ABOVE__SINCE: u32 = 1;
+
+    /// Since when the place_below request is available.
+    #[allow(dead_code)]
+    pub const REQ__PLACE_BELOW__SINCE: u32 = 1;
+
+    /// Since when the set_sync request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_SYNC__SINCE: u32 = 1;
+
+    /// Since when the set_desync request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_DESYNC__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlSubsurface {
     /// remove sub-surface interface
     ///
     /// The sub-surface interface is removed from the wl_surface object

@@ -148,7 +148,10 @@ impl ZwpTabletSeatV2 {
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl ZwpTabletSeatV2 {
     /// release the memory for the tablet seat object
     ///
     /// Destroy the wp_tablet_seat object. Objects created from this

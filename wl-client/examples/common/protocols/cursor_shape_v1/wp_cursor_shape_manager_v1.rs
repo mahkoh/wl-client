@@ -147,6 +147,17 @@ impl WpCursorShapeManagerV1 {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the get_pointer request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_POINTER__SINCE: u32 = 1;
+
+    /// Since when the get_tablet_tool_v2 request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_TABLET_TOOL_V2__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WpCursorShapeManagerV1 {
     /// destroy the manager
     ///
     /// Destroy the cursor shape manager.
@@ -160,10 +171,6 @@ impl WpCursorShapeManagerV1 {
             self.proxy.send_destructor(0, &mut args);
         }
     }
-
-    /// Since when the get_pointer request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_POINTER__SINCE: u32 = 1;
 
     /// manage the cursor shape of a pointer device
     ///
@@ -196,10 +203,6 @@ impl WpCursorShapeManagerV1 {
         // SAFETY: data has the interface WpCursorShapeDeviceV1::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_tablet_tool_v2 request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_TABLET_TOOL_V2__SINCE: u32 = 1;
 
     /// manage the cursor shape of a tablet tool device
     ///

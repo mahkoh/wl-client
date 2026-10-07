@@ -139,7 +139,10 @@ impl WlBuffer {
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl WlBuffer {
     /// destroy a buffer
     ///
     /// Destroy a buffer. If and how you need to release the backing

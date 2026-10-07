@@ -189,7 +189,10 @@ impl ZwpTabletPadGroupV2 {
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl ZwpTabletPadGroupV2 {
     /// destroy the pad object
     ///
     /// Destroy the wp_tablet_pad_group object. Objects created from this object

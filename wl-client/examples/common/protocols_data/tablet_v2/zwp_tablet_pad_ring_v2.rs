@@ -162,10 +162,17 @@ impl PartialEq<ZwpTabletPadRingV2> for ZwpTabletPadRingV2Ref {
 
 #[allow(dead_code)]
 impl ZwpTabletPadRingV2 {
+    /// Since when the set_feedback request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_FEEDBACK__SINCE: u32 = 1;
+
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl ZwpTabletPadRingV2 {
     /// destroy the ring object
     ///
     /// This destroys the client's resource for this ring object.

@@ -149,6 +149,13 @@ impl WlDisplay {
     #[allow(dead_code)]
     pub const REQ__SYNC__SINCE: u32 = 1;
 
+    /// Since when the get_registry request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_REGISTRY__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlDisplay {
     /// asynchronous roundtrip
     ///
     /// The sync request asks the server to emit the 'done' event
@@ -176,10 +183,6 @@ impl WlDisplay {
         // SAFETY: data has the interface WlCallback::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_registry request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_REGISTRY__SINCE: u32 = 1;
 
     /// get global registry object
     ///

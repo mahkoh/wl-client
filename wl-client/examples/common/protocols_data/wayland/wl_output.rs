@@ -173,7 +173,10 @@ impl WlOutput {
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 3;
+}
 
+#[allow(dead_code)]
+impl WlOutput {
     /// release the output object
     ///
     /// Using this request a client can tell the server that it is not going to

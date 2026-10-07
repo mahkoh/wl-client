@@ -148,6 +148,13 @@ impl WlSubcompositor {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the get_subsurface request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_SUBSURFACE__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlSubcompositor {
     /// unbind from the subcompositor interface
     ///
     /// Informs the server that the client will not be using this
@@ -163,10 +170,6 @@ impl WlSubcompositor {
             self.proxy.send_destructor(0, &mut args);
         }
     }
-
-    /// Since when the get_subsurface request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_SUBSURFACE__SINCE: u32 = 1;
 
     /// give a surface the role sub-surface
     ///

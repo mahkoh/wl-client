@@ -137,6 +137,17 @@ impl WlRegion {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the add request is available.
+    #[allow(dead_code)]
+    pub const REQ__ADD__SINCE: u32 = 1;
+
+    /// Since when the subtract request is available.
+    #[allow(dead_code)]
+    pub const REQ__SUBTRACT__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlRegion {
     /// destroy region
     ///
     /// Destroy the region.  This will invalidate the object ID.

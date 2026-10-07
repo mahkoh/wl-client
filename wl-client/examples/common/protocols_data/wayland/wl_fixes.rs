@@ -128,6 +128,13 @@ impl WlFixes {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the destroy_registry request is available.
+    #[allow(dead_code)]
+    pub const REQ__DESTROY_REGISTRY__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlFixes {
     /// destroys this object
     #[inline]
     pub fn destroy(&self) {

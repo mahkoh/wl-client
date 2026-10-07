@@ -224,10 +224,17 @@ impl PartialEq<WlPointer> for WlPointerRef {
 
 #[allow(dead_code)]
 impl WlPointer {
+    /// Since when the set_cursor request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_CURSOR__SINCE: u32 = 1;
+
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 3;
+}
 
+#[allow(dead_code)]
+impl WlPointer {
     /// release the pointer object
     ///
     /// Using this request a client can tell the server that it is not going to

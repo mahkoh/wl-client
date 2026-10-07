@@ -134,6 +134,13 @@ impl WpViewporter {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the get_viewport request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_VIEWPORT__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WpViewporter {
     /// unbind from the cropping and scaling interface
     ///
     /// Informs the server that the client will not be using this
@@ -149,10 +156,6 @@ impl WpViewporter {
             self.proxy.send_destructor(0, &mut args);
         }
     }
-
-    /// Since when the get_viewport request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_VIEWPORT__SINCE: u32 = 1;
 
     /// extend surface interface for crop and scale
     ///

@@ -145,6 +145,13 @@ impl WlShm {
     #[allow(dead_code)]
     pub const REQ__CREATE_POOL__SINCE: u32 = 1;
 
+    /// Since when the release request is available.
+    #[allow(dead_code)]
+    pub const REQ__RELEASE__SINCE: u32 = 2;
+}
+
+#[allow(dead_code)]
+impl WlShm {
     /// create a shm pool
     ///
     /// Create a new wl_shm_pool object.
@@ -178,10 +185,6 @@ impl WlShm {
         // SAFETY: data has the interface WlShmPool::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the release request is available.
-    #[allow(dead_code)]
-    pub const REQ__RELEASE__SINCE: u32 = 2;
 
     /// release the shm object
     ///

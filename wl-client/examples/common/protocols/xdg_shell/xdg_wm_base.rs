@@ -160,6 +160,21 @@ impl XdgWmBase {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the create_positioner request is available.
+    #[allow(dead_code)]
+    pub const REQ__CREATE_POSITIONER__SINCE: u32 = 1;
+
+    /// Since when the get_xdg_surface request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_XDG_SURFACE__SINCE: u32 = 1;
+
+    /// Since when the pong request is available.
+    #[allow(dead_code)]
+    pub const REQ__PONG__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl XdgWmBase {
     /// destroy xdg_wm_base
     ///
     /// Destroy this xdg_wm_base object.
@@ -177,10 +192,6 @@ impl XdgWmBase {
             self.proxy.send_destructor(0, &mut args);
         }
     }
-
-    /// Since when the create_positioner request is available.
-    #[allow(dead_code)]
-    pub const REQ__CREATE_POSITIONER__SINCE: u32 = 1;
 
     /// create a positioner object
     ///
@@ -201,10 +212,6 @@ impl XdgWmBase {
         // SAFETY: data has the interface XdgPositioner::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_xdg_surface request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_XDG_SURFACE__SINCE: u32 = 1;
 
     /// create a shell surface from a surface
     ///

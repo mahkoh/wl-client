@@ -283,6 +283,61 @@ impl XdgToplevel {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the set_parent request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_PARENT__SINCE: u32 = 1;
+
+    /// Since when the set_title request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_TITLE__SINCE: u32 = 1;
+
+    /// Since when the set_app_id request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_APP_ID__SINCE: u32 = 1;
+
+    /// Since when the show_window_menu request is available.
+    #[allow(dead_code)]
+    pub const REQ__SHOW_WINDOW_MENU__SINCE: u32 = 1;
+
+    /// Since when the move request is available.
+    #[allow(dead_code)]
+    pub const REQ__MOVE__SINCE: u32 = 1;
+
+    /// Since when the resize request is available.
+    #[allow(dead_code)]
+    pub const REQ__RESIZE__SINCE: u32 = 1;
+
+    /// Since when the set_max_size request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_MAX_SIZE__SINCE: u32 = 1;
+
+    /// Since when the set_min_size request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_MIN_SIZE__SINCE: u32 = 1;
+
+    /// Since when the set_maximized request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_MAXIMIZED__SINCE: u32 = 1;
+
+    /// Since when the unset_maximized request is available.
+    #[allow(dead_code)]
+    pub const REQ__UNSET_MAXIMIZED__SINCE: u32 = 1;
+
+    /// Since when the set_fullscreen request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_FULLSCREEN__SINCE: u32 = 1;
+
+    /// Since when the unset_fullscreen request is available.
+    #[allow(dead_code)]
+    pub const REQ__UNSET_FULLSCREEN__SINCE: u32 = 1;
+
+    /// Since when the set_minimized request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_MINIMIZED__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl XdgToplevel {
     /// destroy the xdg_toplevel
     ///
     /// This request destroys the role surface and unmaps the surface;

@@ -187,6 +187,17 @@ impl XdgPopup {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the grab request is available.
+    #[allow(dead_code)]
+    pub const REQ__GRAB__SINCE: u32 = 1;
+
+    /// Since when the reposition request is available.
+    #[allow(dead_code)]
+    pub const REQ__REPOSITION__SINCE: u32 = 3;
+}
+
+#[allow(dead_code)]
+impl XdgPopup {
     /// remove xdg_popup interface
     ///
     /// This destroys the popup. Explicitly destroying the xdg_popup

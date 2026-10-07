@@ -166,7 +166,10 @@ impl ZwpTabletV2 {
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl ZwpTabletV2 {
     /// destroy the tablet object
     ///
     /// This destroys the client's resource for this tablet object.

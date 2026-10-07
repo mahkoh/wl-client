@@ -185,10 +185,21 @@ impl PartialEq<WlDataSource> for WlDataSourceRef {
 
 #[allow(dead_code)]
 impl WlDataSource {
+    /// Since when the offer request is available.
+    #[allow(dead_code)]
+    pub const REQ__OFFER__SINCE: u32 = 1;
+
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the set_actions request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_ACTIONS__SINCE: u32 = 3;
+}
+
+#[allow(dead_code)]
+impl WlDataSource {
     /// destroy the data source
     ///
     /// Destroy the data source.

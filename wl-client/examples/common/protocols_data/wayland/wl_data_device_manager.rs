@@ -137,6 +137,13 @@ impl WlDataDeviceManager {
     #[allow(dead_code)]
     pub const REQ__CREATE_DATA_SOURCE__SINCE: u32 = 1;
 
+    /// Since when the get_data_device request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_DATA_DEVICE__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlDataDeviceManager {
     /// create a new data source
     ///
     /// Create a new data source.
@@ -154,10 +161,6 @@ impl WlDataDeviceManager {
         // SAFETY: data has the interface WlDataSource::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_data_device request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_DATA_DEVICE__SINCE: u32 = 1;
 
     /// create a new data device
     ///

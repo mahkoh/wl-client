@@ -212,6 +212,25 @@ impl XdgSurface {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the get_toplevel request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_TOPLEVEL__SINCE: u32 = 1;
+
+    /// Since when the get_popup request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_POPUP__SINCE: u32 = 1;
+
+    /// Since when the set_window_geometry request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_WINDOW_GEOMETRY__SINCE: u32 = 1;
+
+    /// Since when the ack_configure request is available.
+    #[allow(dead_code)]
+    pub const REQ__ACK_CONFIGURE__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl XdgSurface {
     /// destroy the xdg_surface
     ///
     /// Destroy the xdg_surface object. An xdg_surface must only be destroyed
@@ -227,10 +246,6 @@ impl XdgSurface {
             self.proxy.send_destructor(0, &mut args);
         }
     }
-
-    /// Since when the get_toplevel request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_TOPLEVEL__SINCE: u32 = 1;
 
     /// assign the xdg_toplevel surface role
     ///
@@ -253,10 +268,6 @@ impl XdgSurface {
         // SAFETY: data has the interface XdgToplevel::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_popup request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_POPUP__SINCE: u32 = 1;
 
     /// assign the xdg_popup surface role
     ///

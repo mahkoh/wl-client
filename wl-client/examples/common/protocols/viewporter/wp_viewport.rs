@@ -187,6 +187,17 @@ impl WpViewport {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the set_source request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_SOURCE__SINCE: u32 = 1;
+
+    /// Since when the set_destination request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_DESTINATION__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WpViewport {
     /// remove scaling and cropping from the surface
     ///
     /// The associated wl_surface's crop and scale state is removed.

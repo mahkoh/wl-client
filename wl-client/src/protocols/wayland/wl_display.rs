@@ -144,6 +144,13 @@ impl WlDisplay {
     #[allow(dead_code)]
     pub const REQ__SYNC__SINCE: u32 = 1;
 
+    /// Since when the get_registry request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_REGISTRY__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlDisplay {
     #[inline]
     pub fn sync(&self) -> WlCallback {
         let mut args = [wl_argument { n: 0 }];
@@ -158,10 +165,6 @@ impl WlDisplay {
         // SAFETY: data has the interface WlCallback::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_registry request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_REGISTRY__SINCE: u32 = 1;
 
     #[inline]
     pub fn get_registry(&self) -> WlRegistry {

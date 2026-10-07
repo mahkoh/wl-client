@@ -131,6 +131,13 @@ impl ZwpTabletManagerV2 {
     #[allow(dead_code)]
     pub const REQ__GET_TABLET_SEAT__SINCE: u32 = 1;
 
+    /// Since when the destroy request is available.
+    #[allow(dead_code)]
+    pub const REQ__DESTROY__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl ZwpTabletManagerV2 {
     /// get the tablet seat
     ///
     /// Get the wp_tablet_seat object for the given seat. This object
@@ -156,10 +163,6 @@ impl ZwpTabletManagerV2 {
         // SAFETY: data has the interface ZwpTabletSeatV2::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the destroy request is available.
-    #[allow(dead_code)]
-    pub const REQ__DESTROY__SINCE: u32 = 1;
 
     /// release the memory for the tablet manager object
     ///

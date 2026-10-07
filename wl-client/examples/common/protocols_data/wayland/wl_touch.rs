@@ -183,7 +183,10 @@ impl WlTouch {
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 3;
+}
 
+#[allow(dead_code)]
+impl WlTouch {
     /// release the touch object
     #[inline]
     pub fn release(&self) {

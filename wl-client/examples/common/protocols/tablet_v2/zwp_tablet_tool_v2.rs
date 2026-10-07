@@ -302,10 +302,17 @@ impl PartialEq<ZwpTabletToolV2> for ZwpTabletToolV2Ref {
 
 #[allow(dead_code)]
 impl ZwpTabletToolV2 {
+    /// Since when the set_cursor request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_CURSOR__SINCE: u32 = 1;
+
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl ZwpTabletToolV2 {
     /// destroy the tool object
     ///
     /// This destroys the client's resource for this tool object.

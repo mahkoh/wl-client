@@ -20,9 +20,9 @@ _leaking-tests = []
 all-features = false
 
 [dependencies]
-libloading = "0.8.6"
+libloading = "0.9.0"
 parking_lot = "0.12.3"
-isnt = "0.1.0"
+isnt = "0.2.0"
 libc = { version = "0.2.171", optional = true }
 mio = { version = "1.0.3", features = ["os-ext"] }
 cfg-if = "1.0.0"

@@ -1167,8 +1167,7 @@ impl XdgToplevel {
 pub struct XdgToplevelError(pub u32);
 
 impl XdgToplevelError {
-    /// provided value is
-    ///         not a valid variant of the resize_edge enum
+    /// provided value is         not a valid variant of the resize_edge enum
     #[allow(dead_code)]
     pub const INVALID_RESIZE_EDGE: Self = Self(0);
 

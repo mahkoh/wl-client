@@ -53,7 +53,8 @@
 //! The wl_surface.offset request is ignored: clients must use set_position
 //! instead to move the sub-surface.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_subsurface".as_ptr(),

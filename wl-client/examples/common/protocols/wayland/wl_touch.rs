@@ -9,7 +9,8 @@
 //! and ending with an up event. Events relating to the same
 //! contact point can be identified by the ID of the sequence.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_touch".as_ptr(),

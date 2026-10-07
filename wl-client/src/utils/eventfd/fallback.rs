@@ -1,14 +1,12 @@
-use {
-    mio::unix::{
-        pipe,
-        pipe::{Receiver, Sender},
-    },
-    std::{
-        io,
-        io::{ErrorKind, Read, Write},
-        os::fd::{AsFd, BorrowedFd},
-    },
-};
+use mio::unix::pipe;
+use mio::unix::pipe::Receiver;
+use mio::unix::pipe::Sender;
+use std::io;
+use std::io::ErrorKind;
+use std::io::Read;
+use std::io::Write;
+use std::os::fd::AsFd;
+use std::os::fd::BorrowedFd;
 
 #[cfg(test)]
 mod tests;

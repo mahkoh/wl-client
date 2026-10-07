@@ -8,7 +8,8 @@
 //! setup/teardown overhead and is useful when interactively resizing
 //! a surface or for many small buffers.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_shm_pool".as_ptr(),

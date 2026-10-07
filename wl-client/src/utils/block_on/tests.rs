@@ -1,7 +1,6 @@
-use {
-    crate::utils::block_on::block_on,
-    std::{future::poll_fn, task::Poll},
-};
+use crate::utils::block_on::block_on;
+use std::future::poll_fn;
+use std::task::Poll;
 
 #[test]
 fn block_once() {

@@ -4,7 +4,8 @@
 //! seat. After binding to this interface, the compositor sends a set of
 //! wp_tablet_seat.tablet_added and wp_tablet_seat.tool_added events.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_seat_v2".as_ptr(),

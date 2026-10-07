@@ -49,7 +49,8 @@
 //! has not been destroyed, i.e. the client must perform the initial commit
 //! again before attaching a buffer.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"xdg_surface".as_ptr(),

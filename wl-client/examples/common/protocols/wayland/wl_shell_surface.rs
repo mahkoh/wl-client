@@ -12,7 +12,8 @@
 //! wl_shell_surface_destroy() must be called before destroying
 //! the wl_surface object.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_shell_surface".as_ptr(),

@@ -9,7 +9,8 @@
 //! corresponding interface version bump. Backward incompatible changes can
 //! only be done by creating a new major version of the extension.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wp_cursor_shape_manager_v1".as_ptr(),

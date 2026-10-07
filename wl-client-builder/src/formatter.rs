@@ -1,12 +1,16 @@
-use {
-    crate::ast::{Arg, ArgType, Description, Interface, Message, MessageType, Protocol},
-    debug_fn::debug_fn,
-    phf::phf_set,
-    std::{
-        fmt::{Display, Write as FmtWrite},
-        io::{self, Write},
-    },
-};
+use crate::ast::Arg;
+use crate::ast::ArgType;
+use crate::ast::Description;
+use crate::ast::Interface;
+use crate::ast::Message;
+use crate::ast::MessageType;
+use crate::ast::Protocol;
+use debug_fn::debug_fn;
+use phf::phf_set;
+use std::fmt::Display;
+use std::fmt::Write as FmtWrite;
+use std::io;
+use std::io::Write;
 
 macro_rules! define_w {
     ($w:ident) => {

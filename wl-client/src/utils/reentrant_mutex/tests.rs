@@ -1,12 +1,9 @@
-use {
-    crate::utils::reentrant_mutex::ReentrantMutex,
-    std::{
-        cell::Cell,
-        sync::{Arc, Barrier},
-        thread,
-        time::Duration,
-    },
-};
+use crate::utils::reentrant_mutex::ReentrantMutex;
+use std::cell::Cell;
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::thread;
+use std::time::Duration;
 
 #[test]
 #[should_panic(expected = "Trying to lock thread-local mutex in other thread")]

@@ -21,7 +21,8 @@
 //! Any events received before a wp_tablet_tool.frame event should be
 //! considered part of the same hardware state change.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_tool_v2".as_ptr(),

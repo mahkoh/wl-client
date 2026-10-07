@@ -5,7 +5,8 @@
 //! Region objects are used to describe the opaque and input
 //! regions of a surface.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_region".as_ptr(),

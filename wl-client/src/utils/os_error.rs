@@ -1,4 +1,5 @@
-use std::{io, io::ErrorKind};
+use std::io;
+use std::io::ErrorKind;
 
 #[cfg(test)]
 mod tests;

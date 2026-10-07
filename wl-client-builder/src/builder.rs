@@ -1,16 +1,16 @@
-use {
-    crate::{
-        formatter::{format_interface_file, format_mod_file, format_protocol_file},
-        parser::{ParserError, parse},
-    },
-    std::{
-        env::VarError,
-        fs::File,
-        io::{self, BufWriter, Write},
-        path::{Path, PathBuf},
-    },
-    thiserror::Error,
-};
+use crate::formatter::format_interface_file;
+use crate::formatter::format_mod_file;
+use crate::formatter::format_protocol_file;
+use crate::parser::ParserError;
+use crate::parser::parse;
+use std::env::VarError;
+use std::fs::File;
+use std::io;
+use std::io::BufWriter;
+use std::io::Write;
+use std::path::Path;
+use std::path::PathBuf;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 enum BuilderError {

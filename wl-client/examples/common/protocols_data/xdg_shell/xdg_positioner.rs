@@ -20,7 +20,8 @@
 //! set_anchor_rect. Passing an incomplete xdg_positioner object when
 //! positioning a surface raises an invalid_positioner error.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"xdg_positioner".as_ptr(),

@@ -1,27 +1,24 @@
-use {
-    crate::{
-        Libwayland, proxy,
-        test_protocol_helpers::get_root,
-        test_protocols::core::{
-            wl_callback::{WlCallback, WlCallbackEventHandler, WlCallbackRef},
-            wl_display::WlDisplay,
-            wl_dummy::WlDummyRef,
-            wl_root::{WlRootEventHandler, WlRootRef},
-        },
-    },
-    futures_util::join,
-    std::{
-        cell::Cell,
-        ops::Deref,
-        rc::Rc,
-        sync::{
-            Arc, Barrier,
-            atomic::{AtomicBool, AtomicUsize, Ordering::Relaxed},
-        },
-        thread,
-        time::Duration,
-    },
-};
+use crate::Libwayland;
+use crate::proxy;
+use crate::test_protocol_helpers::get_root;
+use crate::test_protocols::core::wl_callback::WlCallback;
+use crate::test_protocols::core::wl_callback::WlCallbackEventHandler;
+use crate::test_protocols::core::wl_callback::WlCallbackRef;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use crate::test_protocols::core::wl_dummy::WlDummyRef;
+use crate::test_protocols::core::wl_root::WlRootEventHandler;
+use crate::test_protocols::core::wl_root::WlRootRef;
+use futures_util::join;
+use std::cell::Cell;
+use std::ops::Deref;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::Relaxed;
+use std::thread;
+use std::time::Duration;
 
 #[test]
 fn sync() {

@@ -6,7 +6,8 @@
 //! create windows that can be dragged, resized, maximized, etc, as well as
 //! creating transient windows such as popup menus.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"xdg_wm_base".as_ptr(),

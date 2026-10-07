@@ -7,7 +7,8 @@
 //! converted to and provides the mechanism for transferring the
 //! data directly from the source client.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_data_offer".as_ptr(),

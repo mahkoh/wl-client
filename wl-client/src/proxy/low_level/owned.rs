@@ -1,39 +1,41 @@
-use {
-    crate::{
-        ffi::{
-            WL_MARSHAL_FLAG_DESTROY, interface_compatible, wl_argument, wl_dispatcher_func_t,
-            wl_interface, wl_message, wl_proxy,
-        },
-        proxy::low_level::{
-            borrowed::UntypedBorrowedProxy,
-            check_dispatching_proxy, check_new_proxy,
-            owned::scope::{Scope, ScopeData},
-        },
-        queue::Queue,
-        utils::sync_ptr::{SyncNonNull, SyncPtr},
-    },
-    destruction::ProxyDataDestruction,
-    parking_lot::Mutex,
-    run_on_drop::on_drop,
-    std::{
-        any::{Any, TypeId},
-        cell::Cell,
-        collections::HashSet,
-        ffi::{c_int, c_void},
-        mem::{self},
-        ops::Deref,
-        panic::{AssertUnwindSafe, catch_unwind},
-        ptr::{self, NonNull},
-        sync::{
-            Arc,
-            atomic::{
-                AtomicBool, AtomicPtr, AtomicUsize,
-                Ordering::{Acquire, Relaxed, Release},
-                fence,
-            },
-        },
-    },
-};
+use crate::ffi::WL_MARSHAL_FLAG_DESTROY;
+use crate::ffi::interface_compatible;
+use crate::ffi::wl_argument;
+use crate::ffi::wl_dispatcher_func_t;
+use crate::ffi::wl_interface;
+use crate::ffi::wl_message;
+use crate::ffi::wl_proxy;
+use crate::proxy::low_level::borrowed::UntypedBorrowedProxy;
+use crate::proxy::low_level::check_dispatching_proxy;
+use crate::proxy::low_level::check_new_proxy;
+use crate::proxy::low_level::owned::scope::Scope;
+use crate::proxy::low_level::owned::scope::ScopeData;
+use crate::queue::Queue;
+use crate::utils::sync_ptr::SyncNonNull;
+use crate::utils::sync_ptr::SyncPtr;
+use destruction::ProxyDataDestruction;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::any::Any;
+use std::any::TypeId;
+use std::cell::Cell;
+use std::collections::HashSet;
+use std::ffi::c_int;
+use std::ffi::c_void;
+use std::mem;
+use std::ops::Deref;
+use std::panic::AssertUnwindSafe;
+use std::panic::catch_unwind;
+use std::ptr;
+use std::ptr::NonNull;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::AtomicPtr;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::Acquire;
+use std::sync::atomic::Ordering::Relaxed;
+use std::sync::atomic::Ordering::Release;
+use std::sync::atomic::fence;
 
 pub(crate) mod destruction;
 pub(crate) mod scope;

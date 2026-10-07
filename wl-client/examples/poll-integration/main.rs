@@ -1,9 +1,12 @@
-use {
-    crate::common::protocols::wayland::{wl_callback::WlCallback, wl_display::WlDisplay},
-    mio::{Interest, Token, unix::SourceFd},
-    std::os::fd::AsRawFd,
-    wl_client::{Libwayland, Queue, proxy},
-};
+use crate::common::protocols::wayland::wl_callback::WlCallback;
+use crate::common::protocols::wayland::wl_display::WlDisplay;
+use mio::Interest;
+use mio::Token;
+use mio::unix::SourceFd;
+use std::os::fd::AsRawFd;
+use wl_client::Libwayland;
+use wl_client::Queue;
+use wl_client::proxy;
 
 #[path = "../common/mod.rs"]
 mod common;

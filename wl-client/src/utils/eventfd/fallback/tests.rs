@@ -1,4 +1,5 @@
-use std::io::{ErrorKind, Write};
+use std::io::ErrorKind;
+use std::io::Write;
 
 tests!();
 

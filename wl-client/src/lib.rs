@@ -336,13 +336,16 @@
 
 #![allow(clippy::len_zero)]
 
-pub use {
-    connection::{Connection, wait_for_events::QueueWatcher},
-    fixed::Fixed,
-    libwayland::Libwayland,
-    proxy::low_level::owned::scope::Scope,
-    queue::{BorrowedQueue, DispatchLock, Queue, QueueOwner, QueueWithData},
-};
+pub use connection::Connection;
+pub use connection::wait_for_events::QueueWatcher;
+pub use fixed::Fixed;
+pub use libwayland::Libwayland;
+pub use proxy::low_level::owned::scope::Scope;
+pub use queue::BorrowedQueue;
+pub use queue::DispatchLock;
+pub use queue::Queue;
+pub use queue::QueueOwner;
+pub use queue::QueueWithData;
 
 #[doc(hidden)]
 pub mod builder;

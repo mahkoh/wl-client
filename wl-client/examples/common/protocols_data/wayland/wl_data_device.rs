@@ -6,7 +6,8 @@
 //! A wl_data_device provides access to inter-client data transfer
 //! mechanisms such as copy-and-paste and drag-and-drop.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_data_device".as_ptr(),

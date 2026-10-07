@@ -25,7 +25,8 @@
 //! The client must call wl_surface.commit on the corresponding wl_surface
 //! for the xdg_popup state to take effect.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"xdg_popup".as_ptr(),

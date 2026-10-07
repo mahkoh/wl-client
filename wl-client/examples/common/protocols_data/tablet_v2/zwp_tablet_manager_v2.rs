@@ -4,7 +4,8 @@
 //! system. All tablets are associated with a seat, to get access to the
 //! actual tablets, use wp_tablet_manager.get_tablet_seat.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_manager_v2".as_ptr(),

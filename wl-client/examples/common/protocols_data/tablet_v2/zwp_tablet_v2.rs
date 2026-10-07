@@ -9,7 +9,8 @@
 //! wp_tablet_seat.tablet_added event. This initial event sequence is
 //! terminated by a wp_tablet.done event.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_v2".as_ptr(),

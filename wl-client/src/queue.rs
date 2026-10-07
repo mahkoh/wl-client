@@ -1,45 +1,49 @@
+use crate::Libwayland;
+use crate::QueueWatcher;
+use crate::connection::Connection;
+use crate::ffi::interface_compatible;
+use crate::ffi::wl_event_queue;
+use crate::ffi::wl_proxy;
+use crate::protocols::wayland::wl_callback::WlCallbackEventHandler;
+use crate::protocols::wayland::wl_callback::WlCallbackRef;
+use crate::protocols::wayland::wl_display::WlDisplay;
+use crate::proxy;
+use crate::proxy::BorrowedProxy;
+use crate::proxy::OwnedProxy;
+use crate::proxy::low_level::OwnedProxyRegistry;
+use crate::proxy::low_level::ProxyDataDestruction;
+use crate::proxy::low_level::UntypedOwnedProxy;
+use crate::proxy::low_level::check_dispatching_proxy;
+use crate::proxy::low_level::check_new_proxy;
+use crate::proxy::low_level::owned::DISPATCH_PANIC;
+use crate::utils::block_on::block_on;
+use crate::utils::reentrant_mutex::ReentrantMutex;
+use crate::utils::reentrant_mutex::ReentrantMutexGuard;
+use crate::utils::sync_cell::SyncCell;
+use crate::utils::sync_ptr::SyncNonNull;
+use crate::utils::sync_ptr::SyncPtr;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::any::TypeId;
+use std::cell::Cell;
+use std::cell::RefCell;
+use std::ffi::CStr;
+use std::ffi::CString;
+use std::fmt::Debug;
+use std::fmt::Formatter;
+use std::future::poll_fn;
+use std::io;
+use std::mem;
+use std::ops::Deref;
+use std::panic::resume_unwind;
+use std::pin::pin;
+use std::ptr;
+use std::ptr::NonNull;
+use std::sync::Arc;
+use std::task::Poll;
+use std::task::Waker;
+use std::thread::panicking;
 pub use with_data::QueueWithData;
-use {
-    crate::{
-        Libwayland, QueueWatcher,
-        connection::Connection,
-        ffi::{interface_compatible, wl_event_queue, wl_proxy},
-        protocols::wayland::{
-            wl_callback::{WlCallbackEventHandler, WlCallbackRef},
-            wl_display::WlDisplay,
-        },
-        proxy::{
-            self, BorrowedProxy, OwnedProxy,
-            low_level::{
-                OwnedProxyRegistry, ProxyDataDestruction, UntypedOwnedProxy,
-                check_dispatching_proxy, check_new_proxy, owned::DISPATCH_PANIC,
-            },
-        },
-        utils::{
-            block_on::block_on,
-            reentrant_mutex::{ReentrantMutex, ReentrantMutexGuard},
-            sync_cell::SyncCell,
-            sync_ptr::{SyncNonNull, SyncPtr},
-        },
-    },
-    parking_lot::Mutex,
-    run_on_drop::on_drop,
-    std::{
-        any::TypeId,
-        cell::{Cell, RefCell},
-        ffi::{CStr, CString},
-        fmt::{Debug, Formatter},
-        future::poll_fn,
-        io, mem,
-        ops::Deref,
-        panic::resume_unwind,
-        pin::pin,
-        ptr::{self, NonNull},
-        sync::Arc,
-        task::{Poll, Waker},
-        thread::panicking,
-    },
-};
 
 #[cfg(test)]
 mod tests;

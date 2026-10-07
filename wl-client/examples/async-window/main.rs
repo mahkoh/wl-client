@@ -1,6 +1,6 @@
-use {
-    crate::common::singletons::get_singletons_async, common::simple_window, wl_client::Libwayland,
-};
+use crate::common::singletons::get_singletons_async;
+use common::simple_window;
+use wl_client::Libwayland;
 
 #[path = "../common/mod.rs"]
 mod common;

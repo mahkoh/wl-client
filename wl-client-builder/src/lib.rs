@@ -84,7 +84,8 @@
 
 #![allow(clippy::collapsible_else_if, clippy::len_zero)]
 
-pub use {builder::Builder, error::Error};
+pub use builder::Builder;
+pub use error::Error;
 
 mod ast;
 mod builder;

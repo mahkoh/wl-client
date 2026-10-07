@@ -21,7 +21,8 @@
 //! emit events to the client and lets the client invoke requests on
 //! the object.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_registry".as_ptr(),

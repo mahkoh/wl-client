@@ -13,7 +13,8 @@
 //! By default, the active surface is null, the keys currently logically down
 //! are empty, the active modifiers and the active group are 0.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_keyboard".as_ptr(),

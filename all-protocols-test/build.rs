@@ -1,4 +1,6 @@
-use {std::os::unix::ffi::OsStrExt, walkdir::WalkDir, wl_client_builder::Builder};
+use std::os::unix::ffi::OsStrExt;
+use walkdir::WalkDir;
+use wl_client_builder::Builder;
 
 fn main() {
     build("wayland-protocols", false);

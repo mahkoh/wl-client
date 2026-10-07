@@ -1,7 +1,7 @@
-use {
-    crate::ffi::{interface_compatible, wl_interface, wl_message},
-    std::ptr,
-};
+use crate::ffi::interface_compatible;
+use crate::ffi::wl_interface;
+use crate::ffi::wl_message;
+use std::ptr;
 
 macro_rules! interface {
     ($name:ident, $interface:expr) => {

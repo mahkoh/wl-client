@@ -1,10 +1,8 @@
-use {
-    crate::{
-        proxy::low_level::owned::UntypedOwnedProxyData,
-        utils::sync_ptr::{SyncNonNull, SyncPtr},
-    },
-    std::mem::{self, ManuallyDrop},
-};
+use crate::proxy::low_level::owned::UntypedOwnedProxyData;
+use crate::utils::sync_ptr::SyncNonNull;
+use crate::utils::sync_ptr::SyncPtr;
+use std::mem;
+use std::mem::ManuallyDrop;
 
 pub(crate) struct ProxyDataDestruction {
     data: Option<SyncNonNull<UntypedOwnedProxyData>>,

@@ -4,7 +4,8 @@
 //! compositor is in charge of combining the contents of multiple
 //! surfaces into one displayable output.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_compositor".as_ptr(),

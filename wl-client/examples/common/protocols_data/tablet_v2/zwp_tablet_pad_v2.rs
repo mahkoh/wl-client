@@ -23,7 +23,8 @@
 //! actions to a single pad feature. Only one mode can be active per group,
 //! although different groups may have different active modes.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_pad_v2".as_ptr(),

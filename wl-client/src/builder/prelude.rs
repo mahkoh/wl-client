@@ -1,30 +1,43 @@
-pub use {
-    crate::{
-        builder::helpers::{
-            check_argument_proxy, convert_optional_string_arg, convert_string_arg, invalid_opcode,
-            unimplemented_event_handler, with_cstr_cache,
-        },
-        ffi::{wl_argument, wl_array, wl_interface, wl_message, wl_proxy},
-        fixed::Fixed,
-        proxy::{
-            self, BorrowedProxy, OwnedProxy,
-            low_level::{
-                CreateEventHandler, EventHandler, UntypedBorrowedProxy,
-                UntypedBorrowedProxyWrapper, UntypedOwnedProxy, UntypedOwnedProxyWrapper,
-            },
-        },
-        queue::Queue,
-    },
-    std::{
-        any::TypeId,
-        fmt::{Debug, Formatter},
-        marker::PhantomData,
-        mem,
-        ops::{
-            BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Deref, Not, Sub,
-            SubAssign,
-        },
-        os::fd::{AsRawFd, BorrowedFd, FromRawFd, OwnedFd},
-        ptr::{self, NonNull},
-    },
-};
+pub use crate::builder::helpers::check_argument_proxy;
+pub use crate::builder::helpers::convert_optional_string_arg;
+pub use crate::builder::helpers::convert_string_arg;
+pub use crate::builder::helpers::invalid_opcode;
+pub use crate::builder::helpers::unimplemented_event_handler;
+pub use crate::builder::helpers::with_cstr_cache;
+pub use crate::ffi::wl_argument;
+pub use crate::ffi::wl_array;
+pub use crate::ffi::wl_interface;
+pub use crate::ffi::wl_message;
+pub use crate::ffi::wl_proxy;
+pub use crate::fixed::Fixed;
+pub use crate::proxy;
+pub use crate::proxy::BorrowedProxy;
+pub use crate::proxy::OwnedProxy;
+pub use crate::proxy::low_level::CreateEventHandler;
+pub use crate::proxy::low_level::EventHandler;
+pub use crate::proxy::low_level::UntypedBorrowedProxy;
+pub use crate::proxy::low_level::UntypedBorrowedProxyWrapper;
+pub use crate::proxy::low_level::UntypedOwnedProxy;
+pub use crate::proxy::low_level::UntypedOwnedProxyWrapper;
+pub use crate::queue::Queue;
+pub use std::any::TypeId;
+pub use std::fmt::Debug;
+pub use std::fmt::Formatter;
+pub use std::marker::PhantomData;
+pub use std::mem;
+pub use std::ops::BitAnd;
+pub use std::ops::BitAndAssign;
+pub use std::ops::BitOr;
+pub use std::ops::BitOrAssign;
+pub use std::ops::BitXor;
+pub use std::ops::BitXorAssign;
+pub use std::ops::Deref;
+pub use std::ops::Not;
+pub use std::ops::Sub;
+pub use std::ops::SubAssign;
+pub use std::os::fd::AsRawFd;
+pub use std::os::fd::BorrowedFd;
+pub use std::os::fd::FromRawFd;
+pub use std::os::fd::OwnedFd;
+pub use std::ptr;
+pub use std::ptr::NonNull;

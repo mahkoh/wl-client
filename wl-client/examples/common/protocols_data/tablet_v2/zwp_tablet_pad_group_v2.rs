@@ -22,7 +22,8 @@
 //! actions, and/or issue the respective .set_feedback requests to notify the
 //! compositor. See the wp_tablet_pad_group.mode_switch event for more details.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_pad_group_v2".as_ptr(),

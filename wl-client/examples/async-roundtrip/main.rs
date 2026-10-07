@@ -1,8 +1,7 @@
-use {
-    crate::common::protocols::wayland::{wl_display::WlDisplay, wl_registry::WlRegistry},
-    std::cell::Cell,
-    wl_client::Libwayland,
-};
+use crate::common::protocols::wayland::wl_display::WlDisplay;
+use crate::common::protocols::wayland::wl_registry::WlRegistry;
+use std::cell::Cell;
+use wl_client::Libwayland;
 
 #[path = "../common/mod.rs"]
 mod common;

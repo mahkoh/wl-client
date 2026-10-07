@@ -6,7 +6,8 @@
 //! Events on a strip are logically grouped by the wl_tablet_pad_strip.frame
 //! event.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_pad_strip_v2".as_ptr(),

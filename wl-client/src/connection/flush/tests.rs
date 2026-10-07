@@ -1,7 +1,6 @@
-use {
-    crate::Libwayland,
-    std::{thread, time::Duration},
-};
+use crate::Libwayland;
+use std::thread;
+use std::time::Duration;
 
 #[test]
 fn try_flush_error() {

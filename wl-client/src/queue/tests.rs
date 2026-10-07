@@ -1,32 +1,31 @@
-use {
-    crate::{
-        Libwayland, Queue, proxy,
-        test_protocol_helpers::{callback, get_root},
-        test_protocols::core::{
-            wl_callback::{WlCallback, WlCallbackEventHandler, WlCallbackRef},
-            wl_display::WlDisplay,
-            wl_string::{WlStringEventHandler, WlStringRef},
-        },
-        utils::{
-            block_on::block_on,
-            poller::{Poller, readable},
-        },
-    },
-    run_on_drop::on_drop,
-    std::{
-        any::Any,
-        cell::Cell,
-        pin::pin,
-        rc::Rc,
-        sync::{
-            Arc, Barrier,
-            atomic::{AtomicBool, Ordering::Relaxed},
-        },
-        task::{Context, Wake, Waker},
-        thread,
-        time::Duration,
-    },
-};
+use crate::Libwayland;
+use crate::Queue;
+use crate::proxy;
+use crate::test_protocol_helpers::callback;
+use crate::test_protocol_helpers::get_root;
+use crate::test_protocols::core::wl_callback::WlCallback;
+use crate::test_protocols::core::wl_callback::WlCallbackEventHandler;
+use crate::test_protocols::core::wl_callback::WlCallbackRef;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use crate::test_protocols::core::wl_string::WlStringEventHandler;
+use crate::test_protocols::core::wl_string::WlStringRef;
+use crate::utils::block_on::block_on;
+use crate::utils::poller::Poller;
+use crate::utils::poller::readable;
+use run_on_drop::on_drop;
+use std::any::Any;
+use std::cell::Cell;
+use std::pin::pin;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
+use std::task::Context;
+use std::task::Wake;
+use std::task::Waker;
+use std::thread;
+use std::time::Duration;
 
 #[test]
 fn debug_queue() {

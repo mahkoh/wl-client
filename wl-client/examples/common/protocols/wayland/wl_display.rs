@@ -3,7 +3,8 @@
 //! The core global object.  This is a special singleton object.  It
 //! is used for internal Wayland protocol features.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_display".as_ptr(),

@@ -1,8 +1,9 @@
-use crate::{
-    Libwayland, proxy,
-    test_protocol_helpers::get_root,
-    test_protocols::core::wl_string::{WlString, WlStringEventHandler, WlStringRef},
-};
+use crate::Libwayland;
+use crate::proxy;
+use crate::test_protocol_helpers::get_root;
+use crate::test_protocols::core::wl_string::WlString;
+use crate::test_protocols::core::wl_string::WlStringEventHandler;
+use crate::test_protocols::core::wl_string::WlStringRef;
 
 #[test]
 fn eq() {

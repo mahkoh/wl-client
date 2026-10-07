@@ -10,7 +10,8 @@
 //! are emitted to inform clients about the valid pixel formats
 //! that can be used for buffers.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_shm".as_ptr(),

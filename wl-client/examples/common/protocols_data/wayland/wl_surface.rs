@@ -43,7 +43,8 @@
 //! a cursor (cursor is a different role than sub-surface, and role
 //! switching is not allowed).
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_surface".as_ptr(),

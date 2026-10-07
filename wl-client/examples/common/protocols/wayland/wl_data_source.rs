@@ -5,7 +5,8 @@
 //! provides a way to describe the offered data and a way to respond
 //! to requests to transfer the data.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_data_source".as_ptr(),

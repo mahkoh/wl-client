@@ -16,7 +16,8 @@
 //! Note, because wl_buffer objects are created from multiple independent
 //! factory interfaces, the wl_buffer interface is frozen at version 1.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_buffer".as_ptr(),

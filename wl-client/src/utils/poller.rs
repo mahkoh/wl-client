@@ -1,20 +1,22 @@
-use {
-    crate::utils::{eventfd::Eventfd, os_error::OsError},
-    io::ErrorKind,
-    mio::{Events, Interest, Token, unix::SourceFd},
-    parking_lot::Mutex,
-    run_on_drop::on_drop,
-    std::{
-        collections::HashMap,
-        future::poll_fn,
-        io,
-        os::fd::{AsFd, AsRawFd},
-        sync::Arc,
-        task::{Poll, Waker},
-        thread,
-    },
-    thread::JoinHandle,
-};
+use crate::utils::eventfd::Eventfd;
+use crate::utils::os_error::OsError;
+use io::ErrorKind;
+use mio::Events;
+use mio::Interest;
+use mio::Token;
+use mio::unix::SourceFd;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::collections::HashMap;
+use std::future::poll_fn;
+use std::io;
+use std::os::fd::AsFd;
+use std::os::fd::AsRawFd;
+use std::sync::Arc;
+use std::task::Poll;
+use std::task::Waker;
+use std::thread;
+use thread::JoinHandle;
 
 #[cfg(test)]
 mod tests;

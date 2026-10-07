@@ -3,21 +3,20 @@
 //! This module contains low-level APIs that are usually only used by `wl-client-builder` in
 //! generated protocol bindings.
 
-pub(crate) use owned::{OwnedProxyRegistry, destruction::ProxyDataDestruction};
-use {
-    crate::{
-        ffi::wl_proxy,
-        proxy::{BorrowedProxy, OwnedProxy, get_owned},
-    },
-    std::{
-        mem::{self, ManuallyDrop},
-        ptr::NonNull,
-    },
-};
-pub use {
-    borrowed::{UntypedBorrowedProxy, UntypedBorrowedProxyWrapper},
-    owned::{EventHandler, UntypedOwnedProxy, UntypedOwnedProxyWrapper},
-};
+use crate::ffi::wl_proxy;
+use crate::proxy::BorrowedProxy;
+use crate::proxy::OwnedProxy;
+use crate::proxy::get_owned;
+pub use borrowed::UntypedBorrowedProxy;
+pub use borrowed::UntypedBorrowedProxyWrapper;
+pub use owned::EventHandler;
+pub(crate) use owned::OwnedProxyRegistry;
+pub use owned::UntypedOwnedProxy;
+pub use owned::UntypedOwnedProxyWrapper;
+pub(crate) use owned::destruction::ProxyDataDestruction;
+use std::mem;
+use std::mem::ManuallyDrop;
+use std::ptr::NonNull;
 
 pub(super) mod borrowed;
 pub(crate) mod owned;

@@ -1,4 +1,5 @@
-use std::cell::{Cell, UnsafeCell};
+use std::cell::Cell;
+use std::cell::UnsafeCell;
 
 /// A `Cell` wrapper that implements `Sync`.
 pub(crate) struct SyncCell<T> {

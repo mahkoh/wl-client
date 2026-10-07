@@ -1,10 +1,10 @@
 macro_rules! tests {
     () => {
-        use {
-            crate::utils::poller::{Poller, readable},
-            std::{sync::Arc, time::Duration},
-            tokio::time::timeout,
-        };
+        use crate::utils::poller::Poller;
+        use crate::utils::poller::readable;
+        use std::sync::Arc;
+        use std::time::Duration;
+        use tokio::time::timeout;
 
         #[tokio::test]
         async fn read() {

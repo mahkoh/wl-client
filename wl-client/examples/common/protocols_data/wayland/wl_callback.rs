@@ -6,7 +6,8 @@
 //! Note, because wl_callback objects are created from multiple independent
 //! factory interfaces, the wl_callback interface is frozen at version 1.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_callback".as_ptr(),

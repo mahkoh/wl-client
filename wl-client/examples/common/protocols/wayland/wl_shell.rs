@@ -10,7 +10,8 @@
 //! For desktop-style user interfaces, use xdg_shell. Compositors and clients
 //! should not implement this interface.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_shell".as_ptr(),

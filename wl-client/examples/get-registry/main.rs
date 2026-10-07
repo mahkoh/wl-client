@@ -1,8 +1,8 @@
-use {
-    crate::common::protocols::wayland::{wl_display::WlDisplay, wl_registry::WlRegistry},
-    parking_lot::Mutex,
-    wl_client::{Libwayland, Queue},
-};
+use crate::common::protocols::wayland::wl_display::WlDisplay;
+use crate::common::protocols::wayland::wl_registry::WlRegistry;
+use parking_lot::Mutex;
+use wl_client::Libwayland;
+use wl_client::Queue;
 
 #[path = "../common/mod.rs"]
 mod common;

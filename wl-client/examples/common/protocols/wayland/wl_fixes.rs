@@ -3,7 +3,8 @@
 //! This global fixes problems with other core-protocol interfaces that
 //! cannot be fixed in these interfaces themselves.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_fixes".as_ptr(),

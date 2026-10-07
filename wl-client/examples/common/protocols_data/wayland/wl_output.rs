@@ -7,7 +7,8 @@
 //! displays part of the compositor space.  This object is published
 //! as global during start up, or when a monitor is hotplugged.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_output".as_ptr(),

@@ -1,12 +1,14 @@
-use {
-    crate::{
-        Libwayland,
-        proxy::{self, low_level::UntypedBorrowedProxy},
-        test_protocol_helpers::get_root,
-        test_protocols::core::{wl_callback::WlCallback, wl_display::WlDisplay, wl_dummy::WlDummy},
-    },
-    std::{cell::Cell, rc::Rc, sync::Barrier, thread},
-};
+use crate::Libwayland;
+use crate::proxy;
+use crate::proxy::low_level::UntypedBorrowedProxy;
+use crate::test_protocol_helpers::get_root;
+use crate::test_protocols::core::wl_callback::WlCallback;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use crate::test_protocols::core::wl_dummy::WlDummy;
+use std::cell::Cell;
+use std::rc::Rc;
+use std::sync::Barrier;
+use std::thread;
 
 #[test]
 fn version() {

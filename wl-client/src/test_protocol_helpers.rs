@@ -1,14 +1,9 @@
-use {
-    crate::{
-        Queue,
-        test_protocols::core::{
-            wl_callback::{WlCallbackEventHandler, WlCallbackRef},
-            wl_display::WlDisplay,
-            wl_root::WlRoot,
-        },
-    },
-    parking_lot::Mutex,
-};
+use crate::Queue;
+use crate::test_protocols::core::wl_callback::WlCallbackEventHandler;
+use crate::test_protocols::core::wl_callback::WlCallbackRef;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use crate::test_protocols::core::wl_root::WlRoot;
+use parking_lot::Mutex;
 
 pub struct Callback<F>(Mutex<Option<F>>);
 

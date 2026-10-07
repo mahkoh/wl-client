@@ -21,7 +21,8 @@
 //! emit events to the client and lets the client invoke requests on
 //! the object.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_registry".as_ptr(),
@@ -154,7 +155,10 @@ impl WlRegistry {
     /// Since when the bind request is available.
     #[allow(dead_code)]
     pub const REQ__BIND__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl WlRegistry {
     /// bind an object to the display
     ///
     /// Binds a new, client-created object to the server using the

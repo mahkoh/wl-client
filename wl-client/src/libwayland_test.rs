@@ -1,36 +1,48 @@
 #![allow(unsafe_op_in_unsafe_fn)]
 
-use {
-    crate::{
-        Fixed,
-        ffi::{
-            WL_MARSHAL_FLAG_DESTROY, wl_argument, wl_array, wl_dispatcher_func_t, wl_display,
-            wl_event_queue, wl_interface, wl_message, wl_proxy,
-        },
-        protocols,
-        proxy::OwnedProxy,
-        test_protocols::core::{
-            wl_callback::WlCallback, wl_display::WlDisplay, wl_dummy::WlDummy,
-            wl_registry::WlRegistry, wl_root::WlRoot, wl_string::WlString,
-        },
-        test_protocols_data,
-    },
-    isnt::std_1::{primitive::IsntMutPtrExt, vec::IsntVecExt},
-    parking_lot::{Condvar, Mutex},
-    std::{
-        cell::{Cell, UnsafeCell},
-        collections::VecDeque,
-        ffi::{CStr, CString, c_char, c_int, c_void},
-        io::{self, ErrorKind},
-        mem,
-        os::{
-            fd::{AsRawFd, FromRawFd, IntoRawFd, OwnedFd},
-            unix::net::UnixStream,
-        },
-        ptr::{self, NonNull},
-        sync::atomic::{AtomicBool, Ordering::Relaxed},
-    },
-};
+use crate::Fixed;
+use crate::ffi::WL_MARSHAL_FLAG_DESTROY;
+use crate::ffi::wl_argument;
+use crate::ffi::wl_array;
+use crate::ffi::wl_dispatcher_func_t;
+use crate::ffi::wl_display;
+use crate::ffi::wl_event_queue;
+use crate::ffi::wl_interface;
+use crate::ffi::wl_message;
+use crate::ffi::wl_proxy;
+use crate::protocols;
+use crate::proxy::OwnedProxy;
+use crate::test_protocols::core::wl_callback::WlCallback;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use crate::test_protocols::core::wl_dummy::WlDummy;
+use crate::test_protocols::core::wl_registry::WlRegistry;
+use crate::test_protocols::core::wl_root::WlRoot;
+use crate::test_protocols::core::wl_string::WlString;
+use crate::test_protocols_data;
+use isnt::std_1::primitive::IsntMutPtrExt;
+use isnt::std_1::vec::IsntVecExt;
+use parking_lot::Condvar;
+use parking_lot::Mutex;
+use std::cell::Cell;
+use std::cell::UnsafeCell;
+use std::collections::VecDeque;
+use std::ffi::CStr;
+use std::ffi::CString;
+use std::ffi::c_char;
+use std::ffi::c_int;
+use std::ffi::c_void;
+use std::io;
+use std::io::ErrorKind;
+use std::mem;
+use std::os::fd::AsRawFd;
+use std::os::fd::FromRawFd;
+use std::os::fd::IntoRawFd;
+use std::os::fd::OwnedFd;
+use std::os::unix::net::UnixStream;
+use std::ptr;
+use std::ptr::NonNull;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
 
 /// This type is a libwayland mock. It implements both the libwayland API (insofar as this
 /// crate uses it) and mocks a wayland compositor. This wayland compositor implements
@@ -927,17 +939,15 @@ impl Libwayland {
 
 #[cfg(test)]
 mod test {
-    use {
-        crate::{
-            Libwayland,
-            ffi::wl_display,
-            libwayland::{Argument, Display, Event},
-            proxy::OwnedProxy,
-            test_protocols::core::wl_display::WlDisplay,
-        },
-        run_on_drop::on_drop,
-        std::cell::Cell,
-    };
+    use crate::Libwayland;
+    use crate::ffi::wl_display;
+    use crate::libwayland::Argument;
+    use crate::libwayland::Display;
+    use crate::libwayland::Event;
+    use crate::proxy::OwnedProxy;
+    use crate::test_protocols::core::wl_display::WlDisplay;
+    use run_on_drop::on_drop;
+    use std::cell::Cell;
 
     thread_local! {
         pub(crate) static FAIL_CONNECT: Cell<u64> = const { Cell::new(0) };

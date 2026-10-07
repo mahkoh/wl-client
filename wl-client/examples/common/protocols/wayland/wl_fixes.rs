@@ -3,7 +3,8 @@
 //! This global fixes problems with other core-protocol interfaces that
 //! cannot be fixed in these interfaces themselves.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_fixes".as_ptr(),
@@ -128,6 +129,13 @@ impl WlFixes {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the destroy_registry request is available.
+    #[allow(dead_code)]
+    pub const REQ__DESTROY_REGISTRY__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlFixes {
     /// destroys this object
     #[inline]
     pub fn destroy(&self) {

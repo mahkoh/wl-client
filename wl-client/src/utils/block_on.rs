@@ -1,14 +1,14 @@
 #[cfg(test)]
 mod tests;
 
-use {
-    parking_lot::{Condvar, Mutex},
-    std::{
-        pin::pin,
-        sync::Arc,
-        task::{Context, Poll, Wake, Waker},
-    },
-};
+use parking_lot::Condvar;
+use parking_lot::Mutex;
+use std::pin::pin;
+use std::sync::Arc;
+use std::task::Context;
+use std::task::Poll;
+use std::task::Wake;
+use std::task::Waker;
 
 #[derive(Default)]
 struct State {

@@ -1,20 +1,22 @@
-use {
-    crate::{
-        Libwayland, Queue,
-        ffi::{wl_argument, wl_interface},
-        proxy::{
-            self, BorrowedProxy, OwnedProxy,
-            low_level::{
-                CreateEventHandler, EventHandler, UntypedBorrowedProxy,
-                UntypedBorrowedProxyWrapper, UntypedOwnedProxy, UntypedOwnedProxyWrapper,
-            },
-        },
-        test_protocols_data::core::{wl_callback::WlCallback, wl_display::WlDisplay},
-        utils::block_on::block_on,
-    },
-    isnt::std_1::primitive::IsntMutPtrExt,
-    std::{any::TypeId, mem},
-};
+use crate::Libwayland;
+use crate::Queue;
+use crate::ffi::wl_argument;
+use crate::ffi::wl_interface;
+use crate::proxy;
+use crate::proxy::BorrowedProxy;
+use crate::proxy::OwnedProxy;
+use crate::proxy::low_level::CreateEventHandler;
+use crate::proxy::low_level::EventHandler;
+use crate::proxy::low_level::UntypedBorrowedProxy;
+use crate::proxy::low_level::UntypedBorrowedProxyWrapper;
+use crate::proxy::low_level::UntypedOwnedProxy;
+use crate::proxy::low_level::UntypedOwnedProxyWrapper;
+use crate::test_protocols_data::core::wl_callback::WlCallback;
+use crate::test_protocols_data::core::wl_display::WlDisplay;
+use crate::utils::block_on::block_on;
+use isnt::std_1::primitive::IsntMutPtrExt;
+use std::any::TypeId;
+use std::mem;
 
 #[test]
 fn with_data() {

@@ -21,7 +21,8 @@
 //! Any events received before a wp_tablet_tool.frame event should be
 //! considered part of the same hardware state change.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_tool_v2".as_ptr(),
@@ -302,10 +303,17 @@ impl PartialEq<ZwpTabletToolV2> for ZwpTabletToolV2Ref {
 
 #[allow(dead_code)]
 impl ZwpTabletToolV2 {
+    /// Since when the set_cursor request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_CURSOR__SINCE: u32 = 1;
+
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl ZwpTabletToolV2 {
     /// destroy the tool object
     ///
     /// This destroys the client's resource for this tool object.

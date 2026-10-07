@@ -1,4 +1,5 @@
-use {super::super::all_types::*, crate::builder::prelude::*};
+use super::super::all_types::*;
+use crate::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_keyboard".as_ptr(),
@@ -132,7 +133,10 @@ impl WlKeyboard {
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 3;
+}
 
+#[allow(dead_code)]
+impl WlKeyboard {
     #[inline]
     pub fn release(&self) {
         let mut args = [];

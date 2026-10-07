@@ -1,9 +1,8 @@
-use {
-    clap::{Parser, ValueHint},
-    error_reporter::Report,
-    std::path::PathBuf,
-    wl_client_builder::Builder,
-};
+use clap::Parser;
+use clap::ValueHint;
+use error_reporter::Report;
+use std::path::PathBuf;
+use wl_client_builder::Builder;
 
 /// Generate safe protocol wrappers for the `wl-client` crate.
 #[derive(Parser, Debug)]

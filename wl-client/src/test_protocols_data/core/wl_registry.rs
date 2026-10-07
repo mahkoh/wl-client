@@ -1,4 +1,5 @@
-use {super::super::all_types::*, crate::builder::prelude::*};
+use super::super::all_types::*;
+use crate::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_registry".as_ptr(),
@@ -131,7 +132,10 @@ impl WlRegistry {
     /// Since when the bind request is available.
     #[allow(dead_code)]
     pub const REQ__BIND__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl WlRegistry {
     /// # Arguments
     ///
     /// - `name`:

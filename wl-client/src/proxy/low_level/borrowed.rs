@@ -1,17 +1,19 @@
-use {
-    crate::{
-        Libwayland, Queue,
-        builder::prelude::UntypedOwnedProxy,
-        ffi::{wl_argument, wl_interface, wl_proxy},
-        proxy::low_level::{check_dispatching_proxy, check_new_proxy},
-        utils::sync_ptr::SyncPtr,
-    },
-    parking_lot::{RwLock, RwLockReadGuard},
-    std::{
-        ptr::{self, NonNull},
-        sync::atomic::{AtomicPtr, AtomicU32, Ordering::Relaxed},
-    },
-};
+use crate::Libwayland;
+use crate::Queue;
+use crate::builder::prelude::UntypedOwnedProxy;
+use crate::ffi::wl_argument;
+use crate::ffi::wl_interface;
+use crate::ffi::wl_proxy;
+use crate::proxy::low_level::check_dispatching_proxy;
+use crate::proxy::low_level::check_new_proxy;
+use crate::utils::sync_ptr::SyncPtr;
+use parking_lot::RwLock;
+use parking_lot::RwLockReadGuard;
+use std::ptr;
+use std::ptr::NonNull;
+use std::sync::atomic::AtomicPtr;
+use std::sync::atomic::AtomicU32;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[cfg(test)]
 mod tests;

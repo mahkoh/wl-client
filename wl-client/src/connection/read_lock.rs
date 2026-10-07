@@ -1,20 +1,21 @@
+use crate::BorrowedQueue;
+use crate::Connection;
 #[expect(unused_imports)]
 use crate::Queue;
-use {
-    crate::{
-        BorrowedQueue, Connection, connection::data::ConnectionData2, utils::os_error::OsError,
-    },
-    parking_lot::{Condvar, Mutex},
-    run_on_drop::on_drop,
-    std::{
-        collections::HashMap,
-        future::poll_fn,
-        io::{self, ErrorKind},
-        sync::Arc,
-        task::{Poll, Waker},
-        thread::{self, JoinHandle},
-    },
-};
+use crate::connection::data::ConnectionData2;
+use crate::utils::os_error::OsError;
+use parking_lot::Condvar;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::collections::HashMap;
+use std::future::poll_fn;
+use std::io;
+use std::io::ErrorKind;
+use std::sync::Arc;
+use std::task::Poll;
+use std::task::Waker;
+use std::thread;
+use std::thread::JoinHandle;
 
 #[cfg(test)]
 mod tests;

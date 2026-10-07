@@ -1,4 +1,6 @@
-use std::{cell::Cell, ptr, sync::Arc};
+use std::cell::Cell;
+use std::ptr;
+use std::sync::Arc;
 
 #[cfg(test)]
 mod tests;

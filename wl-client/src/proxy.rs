@@ -79,22 +79,24 @@
 //! For each proxy, the event handler can only be set once and once set it cannot be
 //! unset.
 
+use crate::Queue;
 #[expect(unused_imports)]
 use crate::Scope;
+#[expect(unused_imports)]
+use crate::connection::Connection;
+use crate::ffi;
+use crate::ffi::wl_interface;
+use crate::proxy::low_level::CreateEventHandler;
+use crate::proxy::low_level::EventHandler;
+use crate::proxy::low_level::UntypedBorrowedProxy;
+use crate::proxy::low_level::UntypedBorrowedProxyWrapper;
+use crate::proxy::low_level::UntypedOwnedProxy;
+use crate::proxy::low_level::UntypedOwnedProxyWrapper;
 pub use crate::proxy::low_level::borrowed::BorrowedProxyLock;
 #[expect(unused_imports)]
-use crate::{connection::Connection, queue::QueueOwner};
-use {
-    crate::{
-        Queue,
-        ffi::{self, wl_interface},
-        proxy::low_level::{
-            CreateEventHandler, EventHandler, UntypedBorrowedProxy, UntypedBorrowedProxyWrapper,
-            UntypedOwnedProxy, UntypedOwnedProxyWrapper,
-        },
-    },
-    std::{mem, ptr::NonNull},
-};
+use crate::queue::QueueOwner;
+use std::mem;
+use std::ptr::NonNull;
 
 pub mod low_level;
 #[cfg(test)]

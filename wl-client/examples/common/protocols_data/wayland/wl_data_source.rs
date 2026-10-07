@@ -5,7 +5,8 @@
 //! provides a way to describe the offered data and a way to respond
 //! to requests to transfer the data.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_data_source".as_ptr(),
@@ -185,10 +186,21 @@ impl PartialEq<WlDataSource> for WlDataSourceRef {
 
 #[allow(dead_code)]
 impl WlDataSource {
+    /// Since when the offer request is available.
+    #[allow(dead_code)]
+    pub const REQ__OFFER__SINCE: u32 = 1;
+
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the set_actions request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_ACTIONS__SINCE: u32 = 3;
+}
+
+#[allow(dead_code)]
+impl WlDataSource {
     /// destroy the data source
     ///
     /// Destroy the data source.

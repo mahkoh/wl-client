@@ -1,12 +1,16 @@
-use {
-    crate::ast::{Arg, ArgType, Description, Interface, Message, MessageType, Protocol},
-    debug_fn::debug_fn,
-    phf::phf_set,
-    std::{
-        fmt::{Display, Write as FmtWrite},
-        io::{self, Write},
-    },
-};
+use crate::ast::Arg;
+use crate::ast::ArgType;
+use crate::ast::Description;
+use crate::ast::Interface;
+use crate::ast::Message;
+use crate::ast::MessageType;
+use crate::ast::Protocol;
+use debug_fn::debug_fn;
+use phf::phf_set;
+use std::fmt::Display;
+use std::fmt::Write as FmtWrite;
+use std::io;
+use std::io::Write;
 
 macro_rules! define_w {
     ($w:ident) => {
@@ -237,6 +241,16 @@ fn format_interface_requests(w: &mut impl Write, interface: &Interface) -> io::R
     if interface.requests.is_empty() {
         return Ok(());
     }
+    let snake = &interface.name;
+    wl!(r#"#[allow(dead_code)]"#)?;
+    wl!(r#"impl {} {{"#, format_camel(snake))?;
+    for (idx, request) in interface.requests.iter().enumerate() {
+        if idx > 0 {
+            wl!()?;
+        }
+        format_message_since(w, false, request)?;
+    }
+    wl!(r#"}}"#)?;
     for owned in [true, false] {
         let skip_request = |r: &Message| match owned {
             true => {
@@ -249,14 +263,11 @@ fn format_interface_requests(w: &mut impl Write, interface: &Interface) -> io::R
         if interface.requests.iter().all(skip_request) {
             continue;
         }
-        let snake = &interface.name;
         let mut name = format_camel(snake).to_string();
         if !owned {
             name.push_str("Ref");
         }
-        if !owned {
-            wl!()?;
-        }
+        wl!()?;
         wl!(r#"#[allow(dead_code)]"#)?;
         wl!(r#"impl {name} {{"#)?;
         let mut first = true;
@@ -270,17 +281,13 @@ fn format_interface_requests(w: &mut impl Write, interface: &Interface) -> io::R
                 wl!()?;
             }
             let new_id = request.args.iter().find(|a| a.ty == ArgType::NewId);
-            if owned {
-                format_message_since(w, false, request)?;
-                wl!()?;
-            }
             format_message_doc(w, true, !owned, request)?;
             wl!(r#"    #[inline]"#)?;
             w!(r#"    pub fn {}"#, escape_name(&request.name))?;
-            if let Some(arg) = new_id {
-                if arg.interface.is_none() {
-                    w!(r#"<P: OwnedProxy>"#)?;
-                }
+            if let Some(arg) = new_id
+                && arg.interface.is_none()
+            {
+                w!(r#"<P: OwnedProxy>"#)?;
             }
             wl!(r#"("#)?;
             wl!(r#"        &self,"#)?;

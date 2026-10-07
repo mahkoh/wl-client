@@ -1,17 +1,19 @@
-use {
-    isnt::std_1::primitive::IsntSliceExt,
-    parking_lot::{Condvar, Mutex},
-    run_on_drop::on_drop,
-    std::{
-        collections::HashMap,
-        future::poll_fn,
-        io, mem,
-        pin::Pin,
-        sync::Arc,
-        task::{Context, Poll, Wake, Waker},
-        thread::{self, JoinHandle},
-    },
-};
+use isnt::std_1::primitive::IsntSliceExt;
+use parking_lot::Condvar;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::collections::HashMap;
+use std::future::poll_fn;
+use std::io;
+use std::mem;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task::Context;
+use std::task::Poll;
+use std::task::Wake;
+use std::task::Waker;
+use std::thread;
+use std::thread::JoinHandle;
 
 #[cfg(test)]
 mod tests;

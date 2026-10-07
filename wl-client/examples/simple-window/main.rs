@@ -1,4 +1,6 @@
-use {crate::common::singletons::get_singletons, common::simple_window, wl_client::Libwayland};
+use crate::common::singletons::get_singletons;
+use common::simple_window;
+use wl_client::Libwayland;
 
 #[path = "../common/mod.rs"]
 mod common;

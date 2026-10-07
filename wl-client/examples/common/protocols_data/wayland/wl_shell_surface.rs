@@ -12,7 +12,8 @@
 //! wl_shell_surface_destroy() must be called before destroying
 //! the wl_surface object.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_shell_surface".as_ptr(),
@@ -232,6 +233,49 @@ impl PartialEq<WlShellSurface> for WlShellSurfaceRef {
     fn eq(&self, other: &WlShellSurface) -> bool {
         self.proxy == other.proxy
     }
+}
+
+#[allow(dead_code)]
+impl WlShellSurface {
+    /// Since when the pong request is available.
+    #[allow(dead_code)]
+    pub const REQ__PONG__SINCE: u32 = 1;
+
+    /// Since when the move request is available.
+    #[allow(dead_code)]
+    pub const REQ__MOVE__SINCE: u32 = 1;
+
+    /// Since when the resize request is available.
+    #[allow(dead_code)]
+    pub const REQ__RESIZE__SINCE: u32 = 1;
+
+    /// Since when the set_toplevel request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_TOPLEVEL__SINCE: u32 = 1;
+
+    /// Since when the set_transient request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_TRANSIENT__SINCE: u32 = 1;
+
+    /// Since when the set_fullscreen request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_FULLSCREEN__SINCE: u32 = 1;
+
+    /// Since when the set_popup request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_POPUP__SINCE: u32 = 1;
+
+    /// Since when the set_maximized request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_MAXIMIZED__SINCE: u32 = 1;
+
+    /// Since when the set_title request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_TITLE__SINCE: u32 = 1;
+
+    /// Since when the set_class request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_CLASS__SINCE: u32 = 1;
 }
 
 #[allow(dead_code)]

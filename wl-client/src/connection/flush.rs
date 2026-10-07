@@ -1,24 +1,19 @@
+use crate::Connection;
 #[expect(unused_imports)]
 use crate::QueueWatcher;
-use {
-    crate::{
-        Connection,
-        connection::data::ConnectionData2,
-        utils::{
-            executor::Executor,
-            os_error::OsError,
-            poller::{self, Poller},
-        },
-    },
-    parking_lot::Mutex,
-    std::{
-        convert::Infallible,
-        future::poll_fn,
-        io::{self, ErrorKind},
-        sync::Arc,
-        task::{Poll, Waker},
-    },
-};
+use crate::connection::data::ConnectionData2;
+use crate::utils::executor::Executor;
+use crate::utils::os_error::OsError;
+use crate::utils::poller;
+use crate::utils::poller::Poller;
+use parking_lot::Mutex;
+use std::convert::Infallible;
+use std::future::poll_fn;
+use std::io;
+use std::io::ErrorKind;
+use std::sync::Arc;
+use std::task::Poll;
+use std::task::Waker;
 
 #[cfg(test)]
 mod tests;

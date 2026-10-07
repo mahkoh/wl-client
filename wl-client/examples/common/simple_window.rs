@@ -1,42 +1,46 @@
-use {
-    crate::common::{
-        protocols::{
-            cursor_shape_v1::{
-                wp_cursor_shape_device_v1::{WpCursorShapeDeviceV1, WpCursorShapeDeviceV1Shape},
-                wp_cursor_shape_manager_v1::WpCursorShapeManagerV1,
-            },
-            viewporter::{wp_viewport::WpViewport, wp_viewporter::WpViewporter},
-            wayland::{
-                wl_buffer::WlBuffer,
-                wl_compositor::WlCompositor,
-                wl_display::WlDisplay,
-                wl_pointer::{WlPointer, WlPointerEventHandler, WlPointerRef},
-                wl_registry::{WlRegistry, WlRegistryEventHandler, WlRegistryRef},
-                wl_seat::{WlSeat, WlSeatCapability, WlSeatEventHandler, WlSeatRef},
-                wl_shm::{WlShm, WlShmFormat},
-                wl_surface::{WlSurface, WlSurfaceRef},
-            },
-            xdg_shell::{
-                xdg_surface::{XdgSurface, XdgSurfaceEventHandler, XdgSurfaceRef},
-                xdg_toplevel::{XdgToplevel, XdgToplevelEventHandler, XdgToplevelRef},
-                xdg_wm_base::{XdgWmBase, XdgWmBaseEventHandler, XdgWmBaseRef},
-            },
-        },
-        singletons::Singletons,
-    },
-    std::{
-        cell::{Cell, RefCell},
-        collections::HashMap,
-        io::Write,
-        os::fd::AsFd,
-        rc::Rc,
-    },
-    tempfile::tempfile,
-    wl_client::{
-        Fixed, Libwayland,
-        proxy::{self, OwnedProxy},
-    },
-};
+use crate::common::protocols::cursor_shape_v1::wp_cursor_shape_device_v1::WpCursorShapeDeviceV1;
+use crate::common::protocols::cursor_shape_v1::wp_cursor_shape_device_v1::WpCursorShapeDeviceV1Shape;
+use crate::common::protocols::cursor_shape_v1::wp_cursor_shape_manager_v1::WpCursorShapeManagerV1;
+use crate::common::protocols::viewporter::wp_viewport::WpViewport;
+use crate::common::protocols::viewporter::wp_viewporter::WpViewporter;
+use crate::common::protocols::wayland::wl_buffer::WlBuffer;
+use crate::common::protocols::wayland::wl_compositor::WlCompositor;
+use crate::common::protocols::wayland::wl_display::WlDisplay;
+use crate::common::protocols::wayland::wl_pointer::WlPointer;
+use crate::common::protocols::wayland::wl_pointer::WlPointerEventHandler;
+use crate::common::protocols::wayland::wl_pointer::WlPointerRef;
+use crate::common::protocols::wayland::wl_registry::WlRegistry;
+use crate::common::protocols::wayland::wl_registry::WlRegistryEventHandler;
+use crate::common::protocols::wayland::wl_registry::WlRegistryRef;
+use crate::common::protocols::wayland::wl_seat::WlSeat;
+use crate::common::protocols::wayland::wl_seat::WlSeatCapability;
+use crate::common::protocols::wayland::wl_seat::WlSeatEventHandler;
+use crate::common::protocols::wayland::wl_seat::WlSeatRef;
+use crate::common::protocols::wayland::wl_shm::WlShm;
+use crate::common::protocols::wayland::wl_shm::WlShmFormat;
+use crate::common::protocols::wayland::wl_surface::WlSurface;
+use crate::common::protocols::wayland::wl_surface::WlSurfaceRef;
+use crate::common::protocols::xdg_shell::xdg_surface::XdgSurface;
+use crate::common::protocols::xdg_shell::xdg_surface::XdgSurfaceEventHandler;
+use crate::common::protocols::xdg_shell::xdg_surface::XdgSurfaceRef;
+use crate::common::protocols::xdg_shell::xdg_toplevel::XdgToplevel;
+use crate::common::protocols::xdg_shell::xdg_toplevel::XdgToplevelEventHandler;
+use crate::common::protocols::xdg_shell::xdg_toplevel::XdgToplevelRef;
+use crate::common::protocols::xdg_shell::xdg_wm_base::XdgWmBase;
+use crate::common::protocols::xdg_shell::xdg_wm_base::XdgWmBaseEventHandler;
+use crate::common::protocols::xdg_shell::xdg_wm_base::XdgWmBaseRef;
+use crate::common::singletons::Singletons;
+use std::cell::Cell;
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::io::Write;
+use std::os::fd::AsFd;
+use std::rc::Rc;
+use tempfile::tempfile;
+use wl_client::Fixed;
+use wl_client::Libwayland;
+use wl_client::proxy;
+use wl_client::proxy::OwnedProxy;
 
 pub struct SimpleWindow {
     pub exit: Rc<Cell<bool>>,

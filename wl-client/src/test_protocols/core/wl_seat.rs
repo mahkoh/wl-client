@@ -1,4 +1,5 @@
-use {super::super::all_types::*, crate::builder::prelude::*};
+use super::super::all_types::*;
+use crate::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_seat".as_ptr(),
@@ -133,6 +134,13 @@ impl WlSeat {
     #[allow(dead_code)]
     pub const REQ__GET_KEYBOARD__SINCE: u32 = 1;
 
+    /// Since when the release request is available.
+    #[allow(dead_code)]
+    pub const REQ__RELEASE__SINCE: u32 = 5;
+}
+
+#[allow(dead_code)]
+impl WlSeat {
     #[inline]
     pub fn get_keyboard(&self) -> WlKeyboard {
         let mut args = [wl_argument { n: 0 }];
@@ -147,10 +155,6 @@ impl WlSeat {
         // SAFETY: data has the interface WlKeyboard::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the release request is available.
-    #[allow(dead_code)]
-    pub const REQ__RELEASE__SINCE: u32 = 5;
 
     #[inline]
     pub fn release(&self) {

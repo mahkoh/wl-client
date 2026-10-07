@@ -9,7 +9,8 @@
 //! and ending with an up event. Events relating to the same
 //! contact point can be identified by the ID of the sequence.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_touch".as_ptr(),
@@ -183,7 +184,10 @@ impl WlTouch {
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 3;
+}
 
+#[allow(dead_code)]
+impl WlTouch {
     /// release the touch object
     #[inline]
     pub fn release(&self) {

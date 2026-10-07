@@ -1,19 +1,19 @@
-use {
-    crate::utils::executor::Executor,
-    parking_lot::{Condvar, Mutex},
-    run_on_drop::on_drop,
-    std::{
-        future::{pending, poll_fn},
-        pin::pin,
-        sync::{
-            Arc, Barrier,
-            atomic::{AtomicBool, AtomicUsize, Ordering::Relaxed},
-        },
-        task::{Poll, Waker},
-        thread,
-        time::Duration,
-    },
-};
+use crate::utils::executor::Executor;
+use parking_lot::Condvar;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::future::pending;
+use std::future::poll_fn;
+use std::pin::pin;
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::AtomicUsize;
+use std::sync::atomic::Ordering::Relaxed;
+use std::task::Poll;
+use std::task::Waker;
+use std::thread;
+use std::time::Duration;
 
 #[test]
 fn cancel_running() {

@@ -1,37 +1,37 @@
 #[expect(unused_imports)]
 use crate::Connection;
+use crate::DispatchLock;
+use crate::Queue;
+use crate::builder::prelude::CreateEventHandler;
+use crate::builder::prelude::EventHandler;
+use crate::builder::prelude::UntypedBorrowedProxy;
+use crate::ffi::wl_argument;
+use crate::ffi::wl_interface;
+use crate::ffi::wl_message;
 #[expect(unused_imports)]
 use crate::proxy;
-use {
-    crate::{
-        DispatchLock, Queue,
-        builder::prelude::{CreateEventHandler, EventHandler, UntypedBorrowedProxy},
-        ffi::{wl_argument, wl_interface, wl_message},
-        proxy::{
-            OwnedProxy, get_owned,
-            low_level::{
-                OwnedProxyRegistry, ProxyDataDestruction,
-                owned::{UntypedOwnedProxyData, event_handler_func},
-            },
-        },
-        utils::{
-            on_drop::abort_on_panic,
-            sync_cell::{SyncCell, SyncUnsafeCell},
-        },
-    },
-    parking_lot::{Condvar, Mutex},
-    run_on_drop::on_drop,
-    std::{
-        any::TypeId,
-        ffi::{c_int, c_void},
-        future::poll_fn,
-        marker::PhantomData,
-        mem,
-        pin::pin,
-        ptr::NonNull,
-        sync::{Arc, atomic::Ordering::Relaxed},
-    },
-};
+use crate::proxy::OwnedProxy;
+use crate::proxy::get_owned;
+use crate::proxy::low_level::OwnedProxyRegistry;
+use crate::proxy::low_level::ProxyDataDestruction;
+use crate::proxy::low_level::owned::UntypedOwnedProxyData;
+use crate::proxy::low_level::owned::event_handler_func;
+use crate::utils::on_drop::abort_on_panic;
+use crate::utils::sync_cell::SyncCell;
+use crate::utils::sync_cell::SyncUnsafeCell;
+use parking_lot::Condvar;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::any::TypeId;
+use std::ffi::c_int;
+use std::ffi::c_void;
+use std::future::poll_fn;
+use std::marker::PhantomData;
+use std::mem;
+use std::pin::pin;
+use std::ptr::NonNull;
+use std::sync::Arc;
+use std::sync::atomic::Ordering::Relaxed;
 
 #[cfg(test)]
 mod tests;

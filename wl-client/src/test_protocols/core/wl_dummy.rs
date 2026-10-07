@@ -1,4 +1,5 @@
-use {super::super::all_types::*, crate::builder::prelude::*};
+use super::super::all_types::*;
+use crate::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_dummy".as_ptr(),
@@ -132,6 +133,17 @@ impl WlDummy {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the recycle request is available.
+    #[allow(dead_code)]
+    pub const REQ__RECYCLE__SINCE: u32 = 1;
+
+    /// Since when the get_string request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_STRING__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlDummy {
     #[inline]
     pub fn destroy(&self) {
         let mut args = [];
@@ -142,10 +154,6 @@ impl WlDummy {
             self.proxy.send_destructor(0, &mut args);
         }
     }
-
-    /// Since when the recycle request is available.
-    #[allow(dead_code)]
-    pub const REQ__RECYCLE__SINCE: u32 = 1;
 
     #[inline]
     pub fn recycle(&self) -> WlDummy {
@@ -161,10 +169,6 @@ impl WlDummy {
         // SAFETY: data has the interface WlDummy::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_string request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_STRING__SINCE: u32 = 1;
 
     #[inline]
     pub fn get_string(&self) -> WlString {

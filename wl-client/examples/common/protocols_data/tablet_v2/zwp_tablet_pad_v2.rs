@@ -23,7 +23,8 @@
 //! actions to a single pad feature. Only one mode can be active per group,
 //! although different groups may have different active modes.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"zwp_tablet_pad_v2".as_ptr(),
@@ -217,10 +218,17 @@ impl PartialEq<ZwpTabletPadV2> for ZwpTabletPadV2Ref {
 
 #[allow(dead_code)]
 impl ZwpTabletPadV2 {
+    /// Since when the set_feedback request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_FEEDBACK__SINCE: u32 = 1;
+
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl ZwpTabletPadV2 {
     /// destroy the pad object
     ///
     /// Destroy the wp_tablet_pad object. Objects created from this object

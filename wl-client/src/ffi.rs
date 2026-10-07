@@ -4,13 +4,12 @@
 
 #![expect(non_camel_case_types)]
 
-use {
-    isnt::std_1::primitive::IsntConstPtrExt,
-    std::{
-        ffi::{CStr, c_char, c_int, c_void},
-        ptr,
-    },
-};
+use isnt::std_1::primitive::IsntConstPtrExt;
+use std::ffi::CStr;
+use std::ffi::c_char;
+use std::ffi::c_int;
+use std::ffi::c_void;
+use std::ptr;
 
 #[cfg(test)]
 mod tests;

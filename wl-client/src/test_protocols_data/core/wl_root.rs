@@ -1,4 +1,5 @@
-use {super::super::all_types::*, crate::builder::prelude::*};
+use super::super::all_types::*;
+use crate::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_root".as_ptr(),
@@ -188,6 +189,33 @@ impl WlRoot {
     #[allow(dead_code)]
     pub const REQ__CREATE_DUMMY__SINCE: u32 = 1;
 
+    /// Since when the ping_dummy request is available.
+    #[allow(dead_code)]
+    pub const REQ__PING_DUMMY__SINCE: u32 = 1;
+
+    /// Since when the destroy request is available.
+    #[allow(dead_code)]
+    pub const REQ__DESTROY__SINCE: u32 = 1;
+
+    /// Since when the get_server_name request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_SERVER_NAME__SINCE: u32 = 1;
+
+    /// Since when the send_new_dummy request is available.
+    #[allow(dead_code)]
+    pub const REQ__SEND_NEW_DUMMY__SINCE: u32 = 1;
+
+    /// Since when the echo request is available.
+    #[allow(dead_code)]
+    pub const REQ__ECHO__SINCE: u32 = 1;
+
+    /// Since when the bind request is available.
+    #[allow(dead_code)]
+    pub const REQ__BIND__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlRoot {
     #[inline]
     pub fn create_dummy(&self) -> WlDummy {
         let mut args = [wl_argument { n: 0 }];
@@ -203,10 +231,6 @@ impl WlRoot {
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
 
-    /// Since when the destroy request is available.
-    #[allow(dead_code)]
-    pub const REQ__DESTROY__SINCE: u32 = 1;
-
     #[inline]
     pub fn destroy(&self) {
         let mut args = [];
@@ -217,10 +241,6 @@ impl WlRoot {
             self.proxy.send_destructor(2, &mut args);
         }
     }
-
-    /// Since when the get_server_name request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_SERVER_NAME__SINCE: u32 = 1;
 
     #[inline]
     pub fn get_server_name(&self) -> WlString {
@@ -236,10 +256,6 @@ impl WlRoot {
         // SAFETY: data has the interface WlString::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the echo request is available.
-    #[allow(dead_code)]
-    pub const REQ__ECHO__SINCE: u32 = 1;
 
     /// # Arguments
     ///
@@ -265,10 +281,6 @@ impl WlRoot {
             unsafe { proxy::low_level::from_untyped_owned(data) }
         })
     }
-
-    /// Since when the bind request is available.
-    #[allow(dead_code)]
-    pub const REQ__BIND__SINCE: u32 = 1;
 
     #[inline]
     pub fn bind<P: OwnedProxy>(&self, version: u32) -> P {

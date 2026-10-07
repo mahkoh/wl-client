@@ -3,7 +3,8 @@
 //! The core global object.  This is a special singleton object.  It
 //! is used for internal Wayland protocol features.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_display".as_ptr(),
@@ -149,6 +150,13 @@ impl WlDisplay {
     #[allow(dead_code)]
     pub const REQ__SYNC__SINCE: u32 = 1;
 
+    /// Since when the get_registry request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_REGISTRY__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlDisplay {
     /// asynchronous roundtrip
     ///
     /// The sync request asks the server to emit the 'done' event
@@ -176,10 +184,6 @@ impl WlDisplay {
         // SAFETY: data has the interface WlCallback::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_registry request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_REGISTRY__SINCE: u32 = 1;
 
     /// get global registry object
     ///

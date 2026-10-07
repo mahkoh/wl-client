@@ -7,7 +7,8 @@
 //! disconnecting the direct relationship between the buffer and the
 //! surface size.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wp_viewporter".as_ptr(),
@@ -134,6 +135,13 @@ impl WpViewporter {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the get_viewport request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_VIEWPORT__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WpViewporter {
     /// unbind from the cropping and scaling interface
     ///
     /// Informs the server that the client will not be using this
@@ -149,10 +157,6 @@ impl WpViewporter {
             self.proxy.send_destructor(0, &mut args);
         }
     }
-
-    /// Since when the get_viewport request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_VIEWPORT__SINCE: u32 = 1;
 
     /// extend surface interface for crop and scale
     ///

@@ -9,7 +9,8 @@
 //! and button and axis events for button presses, button releases
 //! and scrolling.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_pointer".as_ptr(),
@@ -224,10 +225,17 @@ impl PartialEq<WlPointer> for WlPointerRef {
 
 #[allow(dead_code)]
 impl WlPointer {
+    /// Since when the set_cursor request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_CURSOR__SINCE: u32 = 1;
+
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 3;
+}
 
+#[allow(dead_code)]
+impl WlPointer {
     /// release the pointer object
     ///
     /// Using this request a client can tell the server that it is not going to

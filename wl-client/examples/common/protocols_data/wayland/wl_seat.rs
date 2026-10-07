@@ -5,7 +5,8 @@
 //! device is hot plugged.  A seat typically has a pointer and
 //! maintains a keyboard focus and a pointer focus.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_seat".as_ptr(),
@@ -168,6 +169,21 @@ impl WlSeat {
     #[allow(dead_code)]
     pub const REQ__GET_POINTER__SINCE: u32 = 1;
 
+    /// Since when the get_keyboard request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_KEYBOARD__SINCE: u32 = 1;
+
+    /// Since when the get_touch request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_TOUCH__SINCE: u32 = 1;
+
+    /// Since when the release request is available.
+    #[allow(dead_code)]
+    pub const REQ__RELEASE__SINCE: u32 = 5;
+}
+
+#[allow(dead_code)]
+impl WlSeat {
     /// return pointer object
     ///
     /// The ID provided will be initialized to the wl_pointer interface
@@ -192,10 +208,6 @@ impl WlSeat {
         // SAFETY: data has the interface WlPointer::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_keyboard request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_KEYBOARD__SINCE: u32 = 1;
 
     /// return keyboard object
     ///
@@ -222,10 +234,6 @@ impl WlSeat {
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
 
-    /// Since when the get_touch request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_TOUCH__SINCE: u32 = 1;
-
     /// return touch object
     ///
     /// The ID provided will be initialized to the wl_touch interface
@@ -250,10 +258,6 @@ impl WlSeat {
         // SAFETY: data has the interface WlTouch::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the release request is available.
-    #[allow(dead_code)]
-    pub const REQ__RELEASE__SINCE: u32 = 5;
 
     /// release the seat object
     ///

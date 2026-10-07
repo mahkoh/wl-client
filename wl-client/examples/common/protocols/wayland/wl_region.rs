@@ -5,7 +5,8 @@
 //! Region objects are used to describe the opaque and input
 //! regions of a surface.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_region".as_ptr(),
@@ -137,6 +138,17 @@ impl WlRegion {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the add request is available.
+    #[allow(dead_code)]
+    pub const REQ__ADD__SINCE: u32 = 1;
+
+    /// Since when the subtract request is available.
+    #[allow(dead_code)]
+    pub const REQ__SUBTRACT__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlRegion {
     /// destroy region
     ///
     /// Destroy the region.  This will invalidate the object ID.

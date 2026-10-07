@@ -8,7 +8,8 @@
 //! setup/teardown overhead and is useful when interactively resizing
 //! a surface or for many small buffers.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_shm_pool".as_ptr(),
@@ -141,6 +142,17 @@ impl WlShmPool {
     #[allow(dead_code)]
     pub const REQ__CREATE_BUFFER__SINCE: u32 = 1;
 
+    /// Since when the destroy request is available.
+    #[allow(dead_code)]
+    pub const REQ__DESTROY__SINCE: u32 = 1;
+
+    /// Since when the resize request is available.
+    #[allow(dead_code)]
+    pub const REQ__RESIZE__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlShmPool {
     /// create a buffer from the pool
     ///
     /// Create a wl_buffer object from the pool.
@@ -191,10 +203,6 @@ impl WlShmPool {
         // SAFETY: data has the interface WlBuffer::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the destroy request is available.
-    #[allow(dead_code)]
-    pub const REQ__DESTROY__SINCE: u32 = 1;
 
     /// destroy the pool
     ///

@@ -1,28 +1,25 @@
-use {
-    crate::{
-        Libwayland,
-        proxy::{self},
-        test_protocol_helpers::{callback, get_root},
-        test_protocols::core::{
-            wl_callback::{WlCallback, WlCallbackEventHandler, WlCallbackRef},
-            wl_display::WlDisplay,
-            wl_root::WlRootEventHandler,
-        },
-    },
-    run_on_drop::on_drop,
-    std::{
-        cell::Cell,
-        future::poll_fn,
-        mem,
-        panic::{AssertUnwindSafe, catch_unwind},
-        pin::pin,
-        rc::Rc,
-        sync::atomic::{AtomicBool, Ordering::Relaxed},
-        task::Poll,
-        thread,
-        time::Duration,
-    },
-};
+use crate::Libwayland;
+use crate::proxy;
+use crate::test_protocol_helpers::callback;
+use crate::test_protocol_helpers::get_root;
+use crate::test_protocols::core::wl_callback::WlCallback;
+use crate::test_protocols::core::wl_callback::WlCallbackEventHandler;
+use crate::test_protocols::core::wl_callback::WlCallbackRef;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use crate::test_protocols::core::wl_root::WlRootEventHandler;
+use run_on_drop::on_drop;
+use std::cell::Cell;
+use std::future::poll_fn;
+use std::mem;
+use std::panic::AssertUnwindSafe;
+use std::panic::catch_unwind;
+use std::pin::pin;
+use std::rc::Rc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
+use std::task::Poll;
+use std::thread;
+use std::time::Duration;
 
 #[test]
 fn scope() {
@@ -434,27 +431,23 @@ fn scope_concurrent_drop() {
 
 #[cfg(feature = "_leaking-tests")]
 mod leaking {
-    use {
-        crate::{
-            Libwayland, Queue,
-            builder::prelude::UntypedBorrowedProxy,
-            ffi::{wl_argument, wl_interface},
-            proxy::{
-                OwnedProxy,
-                low_level::{CreateEventHandler, EventHandler},
-            },
-            test_protocol_helpers::get_root,
-            test_protocols::core::{
-                wl_callback::WlCallback, wl_display::WlDisplay, wl_root::WlRoot,
-            },
-        },
-        std::{
-            cell::Cell,
-            future::{pending, poll_fn},
-            mem,
-            task::Poll,
-        },
-    };
+    use crate::Libwayland;
+    use crate::Queue;
+    use crate::builder::prelude::UntypedBorrowedProxy;
+    use crate::ffi::wl_argument;
+    use crate::ffi::wl_interface;
+    use crate::proxy::OwnedProxy;
+    use crate::proxy::low_level::CreateEventHandler;
+    use crate::proxy::low_level::EventHandler;
+    use crate::test_protocol_helpers::get_root;
+    use crate::test_protocols::core::wl_callback::WlCallback;
+    use crate::test_protocols::core::wl_display::WlDisplay;
+    use crate::test_protocols::core::wl_root::WlRoot;
+    use std::cell::Cell;
+    use std::future::pending;
+    use std::future::poll_fn;
+    use std::mem;
+    use std::task::Poll;
 
     #[tokio::test]
     async fn scope_async_leak() {

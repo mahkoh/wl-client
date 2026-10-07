@@ -20,7 +20,8 @@
 //! set_anchor_rect. Passing an incomplete xdg_positioner object when
 //! positioning a surface raises an invalid_positioner error.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"xdg_positioner".as_ptr(),
@@ -208,6 +209,45 @@ impl XdgPositioner {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the set_size request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_SIZE__SINCE: u32 = 1;
+
+    /// Since when the set_anchor_rect request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_ANCHOR_RECT__SINCE: u32 = 1;
+
+    /// Since when the set_anchor request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_ANCHOR__SINCE: u32 = 1;
+
+    /// Since when the set_gravity request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_GRAVITY__SINCE: u32 = 1;
+
+    /// Since when the set_constraint_adjustment request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_CONSTRAINT_ADJUSTMENT__SINCE: u32 = 1;
+
+    /// Since when the set_offset request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_OFFSET__SINCE: u32 = 1;
+
+    /// Since when the set_reactive request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_REACTIVE__SINCE: u32 = 3;
+
+    /// Since when the set_parent_size request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_PARENT_SIZE__SINCE: u32 = 3;
+
+    /// Since when the set_parent_configure request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_PARENT_CONFIGURE__SINCE: u32 = 3;
+}
+
+#[allow(dead_code)]
+impl XdgPositioner {
     /// destroy the xdg_positioner object
     ///
     /// Notify the compositor that the xdg_positioner will no longer be used.

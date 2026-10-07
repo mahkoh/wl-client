@@ -16,7 +16,8 @@
 //! Note, because wl_buffer objects are created from multiple independent
 //! factory interfaces, the wl_buffer interface is frozen at version 1.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_buffer".as_ptr(),
@@ -139,7 +140,10 @@ impl WlBuffer {
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl WlBuffer {
     /// destroy a buffer
     ///
     /// Destroy a buffer. If and how you need to release the backing

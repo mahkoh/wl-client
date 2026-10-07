@@ -1,15 +1,17 @@
-use {
-    crate::ffi::{
-        wl_argument, wl_dispatcher_func_t, wl_display, wl_event_queue, wl_interface, wl_proxy,
-    },
-    libloading::Library,
-    parking_lot::Mutex,
-    std::{
-        ffi::{c_char, c_int, c_void},
-        io, mem,
-        sync::LazyLock,
-    },
-};
+use crate::ffi::wl_argument;
+use crate::ffi::wl_dispatcher_func_t;
+use crate::ffi::wl_display;
+use crate::ffi::wl_event_queue;
+use crate::ffi::wl_interface;
+use crate::ffi::wl_proxy;
+use libloading::Library;
+use parking_lot::Mutex;
+use std::ffi::c_char;
+use std::ffi::c_int;
+use std::ffi::c_void;
+use std::io;
+use std::mem;
+use std::sync::LazyLock;
 
 /// A reference to the `libwayland-client.so` dynamic library.
 ///
@@ -368,13 +370,12 @@ impl Libwayland {
 }
 
 mod polyfills {
-    use {
-        crate::{
-            Libwayland,
-            ffi::{wl_display, wl_event_queue, wl_interface, wl_proxy},
-        },
-        std::ffi::c_void,
-    };
+    use crate::Libwayland;
+    use crate::ffi::wl_display;
+    use crate::ffi::wl_event_queue;
+    use crate::ffi::wl_interface;
+    use crate::ffi::wl_proxy;
+    use std::ffi::c_void;
 
     #[repr(C)]
     struct real_wl_object {

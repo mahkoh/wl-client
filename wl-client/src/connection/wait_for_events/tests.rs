@@ -1,12 +1,11 @@
-use {
-    crate::{Libwayland, proxy, test_protocols::core::wl_display::WlDisplay},
-    std::{
-        sync::{Arc, Barrier},
-        thread,
-        time::Duration,
-    },
-    tokio::io::unix::AsyncFd,
-};
+use crate::Libwayland;
+use crate::proxy;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::thread;
+use std::time::Duration;
+use tokio::io::unix::AsyncFd;
 
 #[tokio::test]
 async fn wait_for_two_queues() {

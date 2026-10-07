@@ -11,7 +11,8 @@
 //! functioning properly. See wl_data_source.set_actions,
 //! wl_data_offer.accept and wl_data_offer.finish for details.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_data_device_manager".as_ptr(),
@@ -137,6 +138,13 @@ impl WlDataDeviceManager {
     #[allow(dead_code)]
     pub const REQ__CREATE_DATA_SOURCE__SINCE: u32 = 1;
 
+    /// Since when the get_data_device request is available.
+    #[allow(dead_code)]
+    pub const REQ__GET_DATA_DEVICE__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlDataDeviceManager {
     /// create a new data source
     ///
     /// Create a new data source.
@@ -154,10 +162,6 @@ impl WlDataDeviceManager {
         // SAFETY: data has the interface WlDataSource::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the get_data_device request is available.
-    #[allow(dead_code)]
-    pub const REQ__GET_DATA_DEVICE__SINCE: u32 = 1;
 
     /// create a new data device
     ///

@@ -1,4 +1,5 @@
-use {crate::utils::thread_id::ThreadId, std::ops::Deref};
+use crate::utils::thread_id::ThreadId;
+use std::ops::Deref;
 
 #[cfg(test)]
 mod tests;

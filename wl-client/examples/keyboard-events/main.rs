@@ -1,24 +1,26 @@
-use {
-    crate::common::{
-        protocols::wayland::{
-            wl_display::WlDisplay,
-            wl_keyboard::{
-                WlKeyboard, WlKeyboardEventHandler, WlKeyboardKeyState, WlKeyboardKeymapFormat,
-                WlKeyboardRef,
-            },
-            wl_registry::{WlRegistry, WlRegistryEventHandler, WlRegistryRef},
-            wl_seat::{WlSeat, WlSeatCapability, WlSeatEventHandler, WlSeatRef},
-            wl_surface::WlSurfaceRef,
-        },
-        singletons::get_singletons,
-    },
-    common::simple_window,
-    std::{cell::RefCell, collections::HashMap, os::fd::OwnedFd, rc::Rc},
-    wl_client::{
-        Libwayland,
-        proxy::{self, OwnedProxy},
-    },
-};
+use crate::common::protocols::wayland::wl_display::WlDisplay;
+use crate::common::protocols::wayland::wl_keyboard::WlKeyboard;
+use crate::common::protocols::wayland::wl_keyboard::WlKeyboardEventHandler;
+use crate::common::protocols::wayland::wl_keyboard::WlKeyboardKeyState;
+use crate::common::protocols::wayland::wl_keyboard::WlKeyboardKeymapFormat;
+use crate::common::protocols::wayland::wl_keyboard::WlKeyboardRef;
+use crate::common::protocols::wayland::wl_registry::WlRegistry;
+use crate::common::protocols::wayland::wl_registry::WlRegistryEventHandler;
+use crate::common::protocols::wayland::wl_registry::WlRegistryRef;
+use crate::common::protocols::wayland::wl_seat::WlSeat;
+use crate::common::protocols::wayland::wl_seat::WlSeatCapability;
+use crate::common::protocols::wayland::wl_seat::WlSeatEventHandler;
+use crate::common::protocols::wayland::wl_seat::WlSeatRef;
+use crate::common::protocols::wayland::wl_surface::WlSurfaceRef;
+use crate::common::singletons::get_singletons;
+use common::simple_window;
+use std::cell::RefCell;
+use std::collections::HashMap;
+use std::os::fd::OwnedFd;
+use std::rc::Rc;
+use wl_client::Libwayland;
+use wl_client::proxy;
+use wl_client::proxy::OwnedProxy;
 
 #[path = "../common/mod.rs"]
 mod common;

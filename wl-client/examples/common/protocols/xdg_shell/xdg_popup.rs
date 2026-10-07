@@ -25,7 +25,8 @@
 //! The client must call wl_surface.commit on the corresponding wl_surface
 //! for the xdg_popup state to take effect.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"xdg_popup".as_ptr(),
@@ -187,6 +188,17 @@ impl XdgPopup {
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the grab request is available.
+    #[allow(dead_code)]
+    pub const REQ__GRAB__SINCE: u32 = 1;
+
+    /// Since when the reposition request is available.
+    #[allow(dead_code)]
+    pub const REQ__REPOSITION__SINCE: u32 = 3;
+}
+
+#[allow(dead_code)]
+impl XdgPopup {
     /// remove xdg_popup interface
     ///
     /// This destroys the popup. Explicitly destroying the xdg_popup

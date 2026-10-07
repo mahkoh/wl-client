@@ -1,11 +1,10 @@
-use {
-    crate::common::protocols::wayland::{
-        wl_display::WlDisplay, wl_fixes::WlFixes, wl_registry::WlRegistry,
-    },
-    parking_lot::Mutex,
-    std::collections::HashMap,
-    wl_client::{proxy, proxy::OwnedProxy},
-};
+use crate::common::protocols::wayland::wl_display::WlDisplay;
+use crate::common::protocols::wayland::wl_fixes::WlFixes;
+use crate::common::protocols::wayland::wl_registry::WlRegistry;
+use parking_lot::Mutex;
+use std::collections::HashMap;
+use wl_client::proxy;
+use wl_client::proxy::OwnedProxy;
 
 pub struct Singletons {
     wl_registry: WlRegistry,

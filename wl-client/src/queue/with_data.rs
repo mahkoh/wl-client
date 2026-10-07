@@ -1,17 +1,18 @@
+use crate::Connection;
+use crate::Queue;
+use crate::QueueOwner;
 #[expect(unused_imports)]
 use crate::queue::QueueData;
-use {
-    crate::{Connection, Queue, QueueOwner, utils::block_on::block_on},
-    std::{
-        any::{TypeId, type_name},
-        ffi::CStr,
-        fmt::{Debug, Formatter},
-        io,
-        marker::PhantomData,
-        ops::Deref,
-        ptr,
-    },
-};
+use crate::utils::block_on::block_on;
+use std::any::TypeId;
+use std::any::type_name;
+use std::ffi::CStr;
+use std::fmt::Debug;
+use std::fmt::Formatter;
+use std::io;
+use std::marker::PhantomData;
+use std::ops::Deref;
+use std::ptr;
 
 #[cfg(test)]
 mod tests;

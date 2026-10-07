@@ -1,11 +1,9 @@
-use {
-    crate::ffi::{wl_object, wl_proxy},
-    std::{
-        cell::RefCell,
-        ffi::{CStr, c_char},
-        ptr::NonNull,
-    },
-};
+use crate::ffi::wl_object;
+use crate::ffi::wl_proxy;
+use std::cell::RefCell;
+use std::ffi::CStr;
+use std::ffi::c_char;
+use std::ptr::NonNull;
 
 #[cfg(test)]
 mod tests;

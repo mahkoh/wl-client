@@ -1,8 +1,7 @@
-use std::{
-    hash::Hash,
-    ops::{Deref, DerefMut},
-    ptr::NonNull,
-};
+use std::hash::Hash;
+use std::ops::Deref;
+use std::ops::DerefMut;
+use std::ptr::NonNull;
 
 /// A wrapper around a NonNull pointer that additionally implements Sync + Send.
 #[repr(transparent)]

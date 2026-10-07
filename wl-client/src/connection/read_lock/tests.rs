@@ -1,19 +1,17 @@
-use {
-    crate::{
-        Libwayland, connection::read_lock::State, test_protocols::core::wl_display::WlDisplay,
-    },
-    parking_lot::Mutex,
-    std::{
-        future::poll_fn,
-        io::ErrorKind,
-        pin::pin,
-        sync::{
-            Arc,
-            atomic::{AtomicBool, Ordering::Relaxed},
-        },
-        task::{Context, Poll, Wake, Waker},
-    },
-};
+use crate::Libwayland;
+use crate::connection::read_lock::State;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use parking_lot::Mutex;
+use std::future::poll_fn;
+use std::io::ErrorKind;
+use std::pin::pin;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
+use std::task::Context;
+use std::task::Poll;
+use std::task::Wake;
+use std::task::Waker;
 
 #[tokio::test]
 async fn drop_wait_for_events_1() {

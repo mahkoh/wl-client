@@ -7,7 +7,8 @@
 //! converted to and provides the mechanism for transferring the
 //! data directly from the source client.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_data_offer".as_ptr(),
@@ -179,10 +180,29 @@ impl PartialEq<WlDataOffer> for WlDataOfferRef {
 
 #[allow(dead_code)]
 impl WlDataOffer {
+    /// Since when the accept request is available.
+    #[allow(dead_code)]
+    pub const REQ__ACCEPT__SINCE: u32 = 1;
+
+    /// Since when the receive request is available.
+    #[allow(dead_code)]
+    pub const REQ__RECEIVE__SINCE: u32 = 1;
+
     /// Since when the destroy request is available.
     #[allow(dead_code)]
     pub const REQ__DESTROY__SINCE: u32 = 1;
 
+    /// Since when the finish request is available.
+    #[allow(dead_code)]
+    pub const REQ__FINISH__SINCE: u32 = 3;
+
+    /// Since when the set_actions request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_ACTIONS__SINCE: u32 = 3;
+}
+
+#[allow(dead_code)]
+impl WlDataOffer {
     /// destroy data offer
     ///
     /// Destroy the data offer.

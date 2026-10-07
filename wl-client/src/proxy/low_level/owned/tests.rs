@@ -1,29 +1,30 @@
-use {
-    crate::{
-        Libwayland,
-        proxy::{self, get_owned},
-        test_protocol_helpers::{callback, get_root},
-        test_protocols::core::{
-            wl_callback::{WlCallback, WlCallbackEventHandler, WlCallbackRef},
-            wl_display::{WlDisplay, WlDisplayEventHandler},
-            wl_dummy::{WlDummy, WlDummyEventHandler},
-            wl_root::{WlRootEventHandler, WlRootRef},
-            wl_string::{WlString, WlStringEventHandler, WlStringRef},
-        },
-    },
-    parking_lot::Mutex,
-    run_on_drop::on_drop,
-    std::{
-        cell::Cell,
-        rc::Rc,
-        sync::{
-            Arc, Barrier,
-            atomic::{AtomicBool, Ordering::Relaxed},
-        },
-        thread,
-        time::Duration,
-    },
-};
+use crate::Libwayland;
+use crate::proxy;
+use crate::proxy::get_owned;
+use crate::test_protocol_helpers::callback;
+use crate::test_protocol_helpers::get_root;
+use crate::test_protocols::core::wl_callback::WlCallback;
+use crate::test_protocols::core::wl_callback::WlCallbackEventHandler;
+use crate::test_protocols::core::wl_callback::WlCallbackRef;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use crate::test_protocols::core::wl_display::WlDisplayEventHandler;
+use crate::test_protocols::core::wl_dummy::WlDummy;
+use crate::test_protocols::core::wl_dummy::WlDummyEventHandler;
+use crate::test_protocols::core::wl_root::WlRootEventHandler;
+use crate::test_protocols::core::wl_root::WlRootRef;
+use crate::test_protocols::core::wl_string::WlString;
+use crate::test_protocols::core::wl_string::WlStringEventHandler;
+use crate::test_protocols::core::wl_string::WlStringRef;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::cell::Cell;
+use std::rc::Rc;
+use std::sync::Arc;
+use std::sync::Barrier;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
+use std::thread;
+use std::time::Duration;
 
 #[test]
 fn plain_set_event_handler() {
@@ -563,15 +564,15 @@ fn panic_in_dispatch() {
 
 #[cfg(feature = "_leaking-tests")]
 mod leaking {
-    use {
-        crate::{
-            Libwayland,
-            proxy::{self, OwnedProxy, low_level::CreateEventHandler},
-            test_protocol_helpers::{callback, get_root},
-            test_protocols::core::{wl_callback::WlCallback, wl_display::WlDisplay},
-        },
-        run_on_drop::on_drop,
-    };
+    use crate::Libwayland;
+    use crate::proxy;
+    use crate::proxy::OwnedProxy;
+    use crate::proxy::low_level::CreateEventHandler;
+    use crate::test_protocol_helpers::callback;
+    use crate::test_protocol_helpers::get_root;
+    use crate::test_protocols::core::wl_callback::WlCallback;
+    use crate::test_protocols::core::wl_display::WlDisplay;
+    use run_on_drop::on_drop;
 
     #[test]
     #[should_panic(expected = "Proxy already has an event handler")]

@@ -1,16 +1,13 @@
-use {
-    crate::{
-        Libwayland, proxy,
-        test_protocol_helpers::get_root,
-        test_protocols::core::{wl_callback::WlCallback, wl_display::WlDisplay},
-    },
-    run_on_drop::on_drop,
-    std::{
-        cell::Cell,
-        panic::{AssertUnwindSafe, catch_unwind},
-        rc::Rc,
-    },
-};
+use crate::Libwayland;
+use crate::proxy;
+use crate::test_protocol_helpers::get_root;
+use crate::test_protocols::core::wl_callback::WlCallback;
+use crate::test_protocols::core::wl_display::WlDisplay;
+use run_on_drop::on_drop;
+use std::cell::Cell;
+use std::panic::AssertUnwindSafe;
+use std::panic::catch_unwind;
+use std::rc::Rc;
 
 #[test]
 fn is_destroyed() {

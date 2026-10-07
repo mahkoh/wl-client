@@ -6,7 +6,8 @@
 //! A wl_data_device provides access to inter-client data transfer
 //! mechanisms such as copy-and-paste and drag-and-drop.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_data_device".as_ptr(),
@@ -200,10 +201,21 @@ impl PartialEq<WlDataDevice> for WlDataDeviceRef {
 
 #[allow(dead_code)]
 impl WlDataDevice {
+    /// Since when the start_drag request is available.
+    #[allow(dead_code)]
+    pub const REQ__START_DRAG__SINCE: u32 = 1;
+
+    /// Since when the set_selection request is available.
+    #[allow(dead_code)]
+    pub const REQ__SET_SELECTION__SINCE: u32 = 1;
+
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 2;
+}
 
+#[allow(dead_code)]
+impl WlDataDevice {
     /// destroy data device
     ///
     /// This request destroys the data device.

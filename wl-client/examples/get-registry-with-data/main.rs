@@ -1,7 +1,7 @@
-use {
-    crate::common::protocols_data::wayland::{wl_display::WlDisplay, wl_registry::WlRegistry},
-    wl_client::{Libwayland, proxy},
-};
+use crate::common::protocols_data::wayland::wl_display::WlDisplay;
+use crate::common::protocols_data::wayland::wl_registry::WlRegistry;
+use wl_client::Libwayland;
+use wl_client::proxy;
 
 #[path = "../common/mod.rs"]
 mod common;

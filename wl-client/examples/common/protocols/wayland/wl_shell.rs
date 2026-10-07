@@ -10,7 +10,8 @@
 //! For desktop-style user interfaces, use xdg_shell. Compositors and clients
 //! should not implement this interface.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_shell".as_ptr(),
@@ -126,7 +127,10 @@ impl WlShell {
     /// Since when the get_shell_surface request is available.
     #[allow(dead_code)]
     pub const REQ__GET_SHELL_SURFACE__SINCE: u32 = 1;
+}
 
+#[allow(dead_code)]
+impl WlShell {
     /// create a shell surface from a surface
     ///
     /// Create a shell surface for an existing surface. This gives

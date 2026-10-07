@@ -1,22 +1,25 @@
-use {
-    crate::{
-        BorrowedQueue, Connection, Queue,
-        utils::{eventfd::Eventfd, executor::TaskId, os_error::OsError, poller},
-    },
-    parking_lot::{Condvar, Mutex},
-    run_on_drop::on_drop,
-    std::{
-        convert::Infallible,
-        future::poll_fn,
-        io,
-        os::fd::{AsFd, AsRawFd, BorrowedFd, RawFd},
-        sync::{
-            Arc,
-            atomic::{AtomicBool, Ordering::Relaxed},
-        },
-        task::{Poll, Waker},
-    },
-};
+use crate::BorrowedQueue;
+use crate::Connection;
+use crate::Queue;
+use crate::utils::eventfd::Eventfd;
+use crate::utils::executor::TaskId;
+use crate::utils::os_error::OsError;
+use crate::utils::poller;
+use parking_lot::Condvar;
+use parking_lot::Mutex;
+use run_on_drop::on_drop;
+use std::convert::Infallible;
+use std::future::poll_fn;
+use std::io;
+use std::os::fd::AsFd;
+use std::os::fd::AsRawFd;
+use std::os::fd::BorrowedFd;
+use std::os::fd::RawFd;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
+use std::sync::atomic::Ordering::Relaxed;
+use std::task::Poll;
+use std::task::Waker;
 
 #[cfg(test)]
 mod tests;
@@ -305,10 +308,10 @@ impl QueueWatcher {
     /// dispatched.
     pub fn reset(&self) -> io::Result<()> {
         let data = &*self.data.data;
-        if data.has_error.load(Relaxed) {
-            if let Some(e) = data.data.lock().last_error {
-                return Err(e.into());
-            }
+        if data.has_error.load(Relaxed)
+            && let Some(e) = data.data.lock().last_error
+        {
+            return Err(e.into());
         }
         data.eventfd.clear()?;
         let d = &mut *data.data.lock();

@@ -1,4 +1,5 @@
-use {crate::utils::os_error::OsError, std::io};
+use crate::utils::os_error::OsError;
+use std::io;
 
 #[test]
 fn protocol_error() {

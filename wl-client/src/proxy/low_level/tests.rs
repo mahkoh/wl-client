@@ -1,6 +1,7 @@
-use crate::{
-    Libwayland, proxy, test_protocol_helpers::get_root, test_protocols::core::wl_display::WlDisplay,
-};
+use crate::Libwayland;
+use crate::proxy;
+use crate::test_protocol_helpers::get_root;
+use crate::test_protocols::core::wl_display::WlDisplay;
 
 #[test]
 #[should_panic(expected = "new wl_proxy is null")]

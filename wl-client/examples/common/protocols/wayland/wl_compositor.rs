@@ -4,7 +4,8 @@
 //! compositor is in charge of combining the contents of multiple
 //! surfaces into one displayable output.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_compositor".as_ptr(),
@@ -130,6 +131,13 @@ impl WlCompositor {
     #[allow(dead_code)]
     pub const REQ__CREATE_SURFACE__SINCE: u32 = 1;
 
+    /// Since when the create_region request is available.
+    #[allow(dead_code)]
+    pub const REQ__CREATE_REGION__SINCE: u32 = 1;
+}
+
+#[allow(dead_code)]
+impl WlCompositor {
     /// create new surface
     ///
     /// Ask the compositor to create a new surface.
@@ -147,10 +155,6 @@ impl WlCompositor {
         // SAFETY: data has the interface WlSurface::WL_INTERFACE
         unsafe { proxy::low_level::from_untyped_owned(data) }
     }
-
-    /// Since when the create_region request is available.
-    #[allow(dead_code)]
-    pub const REQ__CREATE_REGION__SINCE: u32 = 1;
 
     /// create new region
     ///

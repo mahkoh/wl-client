@@ -13,7 +13,8 @@
 //! By default, the active surface is null, the keys currently logically down
 //! are empty, the active modifiers and the active group are 0.
 
-use {super::super::all_types::*, ::wl_client::builder::prelude::*};
+use super::super::all_types::*;
+use ::wl_client::builder::prelude::*;
 
 static INTERFACE: wl_interface = wl_interface {
     name: c"wl_keyboard".as_ptr(),
@@ -181,7 +182,10 @@ impl WlKeyboard {
     /// Since when the release request is available.
     #[allow(dead_code)]
     pub const REQ__RELEASE__SINCE: u32 = 3;
+}
 
+#[allow(dead_code)]
+impl WlKeyboard {
     /// release the keyboard object
     #[inline]
     pub fn release(&self) {

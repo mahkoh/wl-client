@@ -1,19 +1,19 @@
-use {
-    crate::{
-        Libwayland,
-        connection::{data::ConnectionData2, flush::Flusher, read_lock::SharedReadLock},
-        ffi::wl_display,
-        utils::{executor::Executor, poller::Poller},
-    },
-    std::{
-        ffi::CStr,
-        fmt::{Debug, Formatter},
-        io,
-        os::fd::{IntoRawFd, OwnedFd},
-        ptr::{self, NonNull},
-        sync::Arc,
-    },
-};
+use crate::Libwayland;
+use crate::connection::data::ConnectionData2;
+use crate::connection::flush::Flusher;
+use crate::connection::read_lock::SharedReadLock;
+use crate::ffi::wl_display;
+use crate::utils::executor::Executor;
+use crate::utils::poller::Poller;
+use std::ffi::CStr;
+use std::fmt::Debug;
+use std::fmt::Formatter;
+use std::io;
+use std::os::fd::IntoRawFd;
+use std::os::fd::OwnedFd;
+use std::ptr;
+use std::ptr::NonNull;
+use std::sync::Arc;
 
 mod flush;
 pub(crate) mod read_lock;
@@ -331,19 +331,16 @@ impl Connection {
 }
 
 pub(super) mod data {
-    use {
-        crate::{
-            Libwayland,
-            ffi::{wl_display, wl_event_queue},
-            utils::sync_ptr::SyncNonNull,
-        },
-        std::{
-            io,
-            os::fd::{AsFd, BorrowedFd},
-            ptr::NonNull,
-            sync::atomic::{AtomicBool, Ordering::Relaxed},
-        },
-    };
+    use crate::Libwayland;
+    use crate::ffi::wl_display;
+    use crate::ffi::wl_event_queue;
+    use crate::utils::sync_ptr::SyncNonNull;
+    use std::io;
+    use std::os::fd::AsFd;
+    use std::os::fd::BorrowedFd;
+    use std::ptr::NonNull;
+    use std::sync::atomic::AtomicBool;
+    use std::sync::atomic::Ordering::Relaxed;
 
     /// The core wrapper around a wl_display.
     ///

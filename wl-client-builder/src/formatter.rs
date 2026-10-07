@@ -277,10 +277,10 @@ fn format_interface_requests(w: &mut impl Write, interface: &Interface) -> io::R
             format_message_doc(w, true, !owned, request)?;
             wl!(r#"    #[inline]"#)?;
             w!(r#"    pub fn {}"#, escape_name(&request.name))?;
-            if let Some(arg) = new_id {
-                if arg.interface.is_none() {
-                    w!(r#"<P: OwnedProxy>"#)?;
-                }
+            if let Some(arg) = new_id
+                && arg.interface.is_none()
+            {
+                w!(r#"<P: OwnedProxy>"#)?;
             }
             wl!(r#"("#)?;
             wl!(r#"        &self,"#)?;

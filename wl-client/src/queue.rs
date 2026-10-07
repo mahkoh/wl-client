@@ -707,10 +707,10 @@ impl Queue {
     unsafe fn dispatch_pending_internal(&self, mut_data: *mut u8) -> io::Result<u64> {
         let d = &*self.queue_data;
         let _resume_unwind = on_drop(|| {
-            if let Some(err) = DISPATCH_PANIC.take() {
-                if !panicking() {
-                    resume_unwind(err);
-                }
+            if let Some(err) = DISPATCH_PANIC.take()
+                && !panicking()
+            {
+                resume_unwind(err);
             }
         });
         let res = self.with_dispatch(|| {

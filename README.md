@@ -19,7 +19,7 @@ unit tests that were created via manual mutation testing to achieve a nearly
 
 ## MSRV
 
-The MSRV is `max(1.85, stable - 3)`.
+The MSRV is `stable - 3`.
 
 ## License
 

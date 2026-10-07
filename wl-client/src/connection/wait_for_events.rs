@@ -305,10 +305,10 @@ impl QueueWatcher {
     /// dispatched.
     pub fn reset(&self) -> io::Result<()> {
         let data = &*self.data.data;
-        if data.has_error.load(Relaxed) {
-            if let Some(e) = data.data.lock().last_error {
-                return Err(e.into());
-            }
+        if data.has_error.load(Relaxed)
+            && let Some(e) = data.data.lock().last_error
+        {
+            return Err(e.into());
         }
         data.eventfd.clear()?;
         let d = &mut *data.data.lock();
